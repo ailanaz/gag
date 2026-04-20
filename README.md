@@ -1,2 +1,2 @@
-# remote.radar
-Aggregates remote jobs with posting alerts
+# gag
+Gifts & Gadgets for Men or people who just really love gadgets
