@@ -833,7 +833,7 @@ const allowedRegions = new Set(['asia','europe','me','americas']);
 const defaultUiState = { activeView:'triage', triageFilter:'all', mapRegion:'asia', hubSignalId:null };
 let selectedTriageId = null;
 let uiState = loadUiState();
-const DEFAULT_FEED_URL = './data.json';
+const DEFAULT_FEED_URL = 'https://raw.githubusercontent.com/ailanaz/gag/main/feed.json';
 
 function normalizeStream(value) {
   const v = String(value || '').trim().toLowerCase();
@@ -964,6 +964,10 @@ function normalizeSignal(raw, index) {
     mediaUrl: mediaUrl,
     thumbUrl: thumbUrl && thumbUrl.includes('undefined') ? '' : thumbUrl,
     mediaOrigin: raw.mediaOrigin || formatCode(origin),
+    brand: raw.brand || raw.maker || '',
+    price: raw.price || '',
+    use: raw.use || raw.useCase || '',
+    score: Number(raw.score) || 0
     url: sourceUrl || ''
   };
 }
@@ -1662,41 +1666,39 @@ function copySignalSummary(id) {
 
 // Re-render the signal cards in gap.html media-card style
 function renderGapCards() {
-  const grid = document.getElementById('cards-grid');
+  var grid = document.getElementById('cards-grid');
   if (!grid) return;
-  const filtered = getFilteredSignals();
+  var filtered = getFilteredSignals();
   if (!filtered.length) {
-    grid.innerHTML = '<div class="empty-g">No signals match your filters</div>';
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Items Found</div><div class="empty-desc">Adjust filters or search terms</div></div>';
     return;
   }
-  grid.innerHTML = filtered.map(s => {
-    const thumb = getThumb(s);
-    const gapScore = getGapScore(s);
-    const originClass = normalizeOrigin(s.origin).replace(/[^a-z]/g, '-').replace(/^me$/, 'middle-east');
-    const isPatent = normalizeSourceType(s.sourceType) === 'PATENT' || (s.source || '').toLowerCase().includes('patent');
-    return `<article class="media-card-g" data-origin="${normalizeOrigin(s.origin)}" onclick="selectSignal(${s.id})">
-      <div class="card-thumb-g">
-        ${thumb ? `<img src="${thumb}" alt="${s.title}" loading="lazy" onerror="this.remove();"/>` : '<div class="card-thumb-empty-g">No source media</div>'}
-        <div class="thumb-overlay-g"><span class="play-icon-g">▶</span></div>
-      </div>
-      <div class="card-title-g">${s.title}</div>
-      <div class="card-chips-g">
-        <span class="chip-g ${originClass}">${prettyOriginLabel(s.origin, s.originLabel)}</span>
-        <span class="chip-g">${streamLabel(s.stream)}</span>
-<span class="chip-g score">${gapScore}</span>
-        ${isPatent ? '<span class="chip-g patent">Patent</span>' : ''}
-      </div>
-      <div class="card-desc-g">${(s.desc || '').slice(0,100)}${s.desc && s.desc.length > 100 ? '…' : ''}</div>
-      <div class="card-actions-g">
-        <button onclick="event.stopPropagation();keepCard(${s.id})">Save</button>
-        <button onclick="event.stopPropagation();addToGapQueue(${s.id})">Queue</button>
-        <button onclick="event.stopPropagation();openModal(${s.id})">Analyze</button>
-      </div>
-    </article>`;
+  grid.innerHTML = filtered.map(function(c) {
+    var tUrl = c.thumbUrl || '';
+    var thumbHtml = tUrl
+      ? '<img src="' + tUrl + '" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:6px 6px 0 0;">'
+      : '<div style="width:100%;height:140px;background:var(--module);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;border-radius:6px 6px 0 0;">No image</div>';
+    var scoreNum = c.score || 0;
+    var priceStr = c.price || '';
+    var brandStr = c.brand || c.source || '';
+    var useStr = c.use || c.stream || '';
+    return '<article class="media-card-g" onclick="toggleTriageSelect(' + c.id + ')">'
+      + '<div class="card-thumb-g" style="height:140px;overflow:hidden;">' + thumbHtml + '</div>'
+      + '<div class="card-title-g">' + (c.title || 'Untitled') + '</div>'
+      + '<div class="card-chips-g">'
+        + (brandStr ? '<span class="chip-g">' + brandStr + '</span>' : '')
+        + (priceStr ? '<span class="chip-g" style="color:var(--signal-green)">' + priceStr + '</span>' : '')
+        + (useStr ? '<span class="chip-g">' + useStr + '</span>' : '')
+        + '<span class="chip-g score">Score ' + scoreNum + '</span>'
+      + '</div>'
+      + '<div class="card-desc-g">' + (c.desc || '') + '</div>'
+      + '<div class="card-actions-g">'
+        + '<button class="key-btn key-keep" onclick="event.stopPropagation();keepCard(' + c.id + ',event)">Save</button>'
+        + '<button class="key-btn" onclick="event.stopPropagation();keepCard(' + c.id + ',event)">Queue</button>'
+        + '<button class="key-btn" onclick="event.stopPropagation();openSignalSource(' + c.id + ')">Insight</button>'
+      + '</div>'
+      + '</article>';
   }).join('');
-  if (window._activeRegion) {
-    applyRegionFocus(window._activeRegion, { syncBubble: true });
-  }
 }
 
 // Select a signal → update hero
@@ -2141,6 +2143,12 @@ restoreUiState();
     updateCarousel();
   }, 5000);
 })();
+
+/* ---------- item action aliases ---------- */
+function saveItem(id){ keepCard(id, null); }
+function queueItem(id){ keepCard(id, null); }
+function inspectItem(id){ openSignalSource(id); }
+function selectItem(id){ toggleTriageSelect(id); }
 </script>
 </body>
 </html>
