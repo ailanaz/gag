@@ -125,7 +125,24 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
 /* footer */
 .footer{position:fixed;left:16px;right:16px;bottom:10px;height:44px;display:flex;align-items:center;gap:12px;padding:6px 14px;z-index:40}
-#playback{font-size:11px;color:var(--mut </style>
+#playback{font-size:11px;color:var(--mut /* carousel */
+.carousel{position:relative;margin:20px 16px;height:200px;overflow:hidden}
+.carousel-inner{display:flex;transition:transform .4s ease}
+.slide{min-width:100%;position:relative}
+.slide img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.slide-caption{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,0.5);color:#fff;
+  padding:8px;font-size:13px;text-align:center;
+}
+.carousel-prev,.carousel-next{
+  position:absolute;top:50%;transform:translateY(-50%);
+  background:rgba(0,0,0,0.4);border:none;color:#fff;
+  width:30px;height:30px;border-radius:50%;font-size:18px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.carousel-prev{left:8px}
+.carousel-next{right:8px}</style>
 </head>
 <body>
 <div id="app">
