@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>GAP — Global Alpha Pipeline</title>
+<title>GAG for Men — Gifts &amp; Gadgets</title>
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -591,49 +591,24 @@ html, body { font-family: var(--sans); }
 .queue-row-g:hover { border-color:rgba(0,230,216,0.15); color:var(--text); }
 .queue-empty-g { color:var(--muted-dim); font-size:11px; padding:8px 0; font-family:var(--mono); }
 
-/* map floating pane */
-.map-float { position:fixed; right:20px; bottom:80px; width:260px; padding:8px; overflow:hidden; z-index:30; transition:height 0.3s ease; height:165px; }
-  .map-float.collapsed { height:28px; }
-  .map-float-header { font-size:10px; color:var(--muted); margin-bottom:3px; text-transform:uppercase; letter-spacing:1px; font-family:var(--mono); cursor:pointer; display:flex; align-items:center; justify-content:space-between; user-select:none; }
-  .map-float-header:hover { color:var(--accent); }
-
-
-
-/* pulse for map markers */
-/* region zone base */
-@keyframes zone-breathe {
-  0%,100% { opacity:.18; }
-  50%      { opacity:.32; }
+/* ---------- carousel (replaces map-float pane) ---------- */
+.carousel-inner{display:flex;transition:transform .4s ease;height:100%;}
+.slide{min-width:100%;position:relative;flex-shrink:0;}
+.slide img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.slide-caption{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,0.5);color:#fff;
+  padding:8px;font-size:13px;text-align:center;
 }
-@keyframes zone-active-pulse {
-  0%,100% { opacity:.72; }
-  50%      { opacity:1; }
+.carousel-prev,.carousel-next{
+  position:absolute;top:50%;transform:translateY(-50%);
+  background:rgba(0,0,0,0.4);border:none;color:#fff;
+  width:30px;height:30px;border-radius:50%;font-size:18px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  z-index:5;
 }
-.zone-fill {
-  fill: var(--accent);
-  opacity: 0;
-  animation: none;
-}
-.zone-border {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 1.5;
-  opacity: 0;
-  animation: none;
-}
-.region-zone.zone-active .zone-fill {
-  fill: var(--accent);
-  opacity: .72;
-  animation: zone-active-pulse 1.8s ease-in-out infinite;
-}
-.region-zone.zone-active .zone-border {
-  stroke: var(--accent);
-  stroke-width: 2.5;
-  opacity: 1;
-  animation: zone-active-pulse 1.8s ease-in-out infinite;
-}
-.region-zone.zone-dim .zone-fill  { opacity: .07; animation: none; }
-.region-zone.zone-dim .zone-border { opacity: .14; animation: none; }
+.carousel-prev{left:8px}
+.carousel-next{right:8px}
 
 /* modal */
 .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:80; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
@@ -666,8 +641,8 @@ body { padding-bottom: 0; }
 <!-- TOPBAR -->
 <header class="topbar glass">
   <div class="topbar-logo">
-    <img src="./logo.png" alt="GAP" style="height:40px;width:auto;display:block;" />
-  </div>  <div class="topbar-title">Global Alpha Pipeline</div>
+    <img src="./logo.png" alt="GAG for Men" style="height:40px;width:auto;display:block;" />
+  </div>  <div class="topbar-title">GAG for Men</div>
 
   <div class="topbar-controls">
     <button class="chip-btn-g" style="margin-left:auto;border-radius:20px;" onclick="refreshSignalFeed();">Refresh</button>
@@ -683,7 +658,7 @@ body { padding-bottom: 0; }
   <!-- COL 1: Portrait preview -->
   <div class="hero-left">
     <div class="hero-media" id="heroMedia">
-      <div class="hero-placeholder" id="heroPlaceholder">Select to preview</div>
+      <div class="hero-placeholder" id="heroPlaceholder">Select an item to preview</div>
       <div class="alpha-badge" id="heroBadge" style="display:none"></div>
     </div>
     
@@ -697,9 +672,9 @@ body { padding-bottom: 0; }
     <div class="wb-card">
       <div class="wb-title">Export</div>
       <div class="wb-templates">
-        <button onclick="exportTemplate('TikTok')">TikTok</button>
-        <button onclick="exportTemplate('Reels')">Reels</button>
-        <button onclick="exportTemplate('Shorts')">Shorts</button>
+        <button onclick="exportTemplate('Wishlist')">Wishlist</button>
+        <button onclick="exportTemplate('Buy Link')">Buy Link</button>
+        <button onclick="exportTemplate('Gift List')">Gift List</button>
       </div>
     </div>
     <div class="wb-card">
@@ -763,17 +738,24 @@ body { padding-bottom: 0; }
     <div class="cards-grid" id="cards-grid"></div>
   </div>
 </div>
-</main><!-- FLOATING MAP -->
-<div class="map-float glass" id="mapFloatPanel">
-  <div class="map-float-header" onclick="toggleFloatMap()">
-    <span>Global Coverage</span><span id="mapFloatToggle" style="font-size:9px;opacity:0.6;">▼</span>
+</main><!-- CAROUSEL -->
+<div class="map-float glass" id="carouselPanel">
+  <div class="carousel-inner">
+    <div class="slide" data-id="1">
+      <img src="https://images.unsplash.com/photo-1583324113626-70df0f4e0d91?w=600&q=60" alt="Smart Leather Wallet">
+      <div class="slide-caption">Smart Leather Wallet – $79</div>
+    </div>
+    <div class="slide" data-id="2">
+      <img src="https://images.unsplash.com/photo-1600185353679-1a24c99b2b23?w=600&q=60" alt="Bluetooth Beanie">
+      <div class="slide-caption">Bluetooth Beanie – $45</div>
+    </div>
+    <div class="slide" data-id="3">
+      <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=60" alt="Premium Watch">
+      <div class="slide-caption">Premium Watch – $199</div>
+    </div>
   </div>
-  <div id="mapFloatBody" style="position:relative;width:100%;height:148px;border-radius:6px;overflow:hidden;">
-    <img src="./world.svg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.75;" />
-    <svg id="worldMapFloat" viewBox="0 0 2000 857" style="position:absolute;inset:0;width:100%;height:100%;" xmlns="http://www.w3.org/2000/svg">
-      <g id="floatMarkers"></g>
-    </svg>
-  </div>
+  <button class="carousel-prev" aria-label="Previous">‹</button>
+  <button class="carousel-next" aria-label="Next">›</button>
 </div>
 <!-- MODAL -->
 <div class="modal-bg" id="modalBg">
@@ -1234,7 +1216,7 @@ function getGapMetrics(s) {
 }
 function gapThesis(s) {
   const region = s.originLabel || prettyOriginLabel(s.origin, s.originLabel);
-  const title = String(s.title || 'This GAP item').replace(/^(WIPO Patent|WIPO|Patent|Kickstarter|Indiegogo|LEAP|Behance|Dribbble|NAMA|RetailTech)\s*[:|-]\s*/i, '').trim();
+  const title = String(s.title || 'This gift').replace(/^(WIPO Patent|WIPO|Patent|Kickstarter|Indiegogo|LEAP|Behance|Dribbble|NAMA|RetailTech)\s*[:|-]\s*/i, '').trim();
   const stream = streamLabel(s.stream).toLowerCase();
   const sourceType = normalizeSourceType(s.sourceType);
   const benefit = benefitTags(s)[0] || 'scalable execution';
@@ -1289,7 +1271,7 @@ function cardMarkup(s, { showActions=false, selectable=false }={}) {
       <div class="card-header">
         <div class="card-header-left">
           <span class="card-id">${sigId(s)}</span>
-          <span class="card-stage-tag${normalizeStream(s.stream)==='tech'?' verified':''}">${normalizeStream(s.stream)==='tech'?'Alpha Verified':'Signal In Progress'}</span>
+          <span class="card-stage-tag${normalizeStream(s.stream)==='tech'?' verified':''}">${normalizeStream(s.stream)==='tech'?'Score Verified':'Signal In Progress'}</span>
           <span class="card-stream ${streamClass(s.stream)}">${streamLabel(s.stream)}</span>
           <span class="card-type">${formatCode(normalizeSourceType(s.sourceType))}</span>
         </div>
@@ -1317,7 +1299,7 @@ function cardMarkup(s, { showActions=false, selectable=false }={}) {
 
 function renderCards(data) {
   const grid = document.getElementById('cards-grid');
-  if (!data.length) { grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Alpha Found</div><div class="empty-desc">Adjust stream or region filters</div></div>'; return; }
+  if (!data.length) { grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Items Found</div><div class="empty-desc">Adjust stream or region filters</div></div>'; return; }
   grid.innerHTML = data.map(s => cardMarkup(s, { showActions:true, selectable:true })).join('');
 }
 
@@ -1358,7 +1340,7 @@ function showDetail(id) {
     <div class="detail-row"><span class="detail-key">Source</span><span class="detail-val">${s.source}</span></div>
     ${s.tradeShow ? `<div class="detail-row"><span class="detail-key">Event</span><span class="detail-val">${s.tradeShow}</span></div>` : ''}
     <div class="copy-module">
-      <div class="copy-module-header">Export Alpha</div>
+      <div class="copy-module-header">Export</div>
       <div class="copy-module-body">
         <div class="copy-text">${sigId(s)} // ${regionNode(s)} // ${signalDate(s)}<br><br>${s.title}<br><br>Avg setup: $${s.setupCost.toLocaleString()} // Monthly est. ~$${monthlyRevEst(s).toLocaleString()} // Market growth: ${marketGrowth(s)}<br>Benefits: ${benefitTags(s).join(' · ')}</div>
         <div class="copy-actions">
@@ -1561,7 +1543,7 @@ function filterByRegion(region) {
   const filtered = keptSignals.filter(s => s.origin===r);
   const grid = document.getElementById('map-signals-grid');
   if (!grid) return;
-  if (!filtered.length) { grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Sourced Alpha</div><div class="empty-desc">No alpha found for this region</div></div>'; return; }
+  if (!filtered.length) { grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Saved Items</div><div class="empty-desc">No items found for this region</div></div>'; return; }
   grid.innerHTML = filtered.slice(0,4).map(s => cardMarkup(s)).join('');
 }
 
@@ -1701,7 +1683,7 @@ function renderGapCards() {
       <div class="card-chips-g">
         <span class="chip-g ${originClass}">${prettyOriginLabel(s.origin, s.originLabel)}</span>
         <span class="chip-g">${streamLabel(s.stream)}</span>
-<span class="chip-g alpha">${gapScore}</span>
+<span class="chip-g score">${gapScore}</span>
         ${isPatent ? '<span class="chip-g patent">Patent</span>' : ''}
       </div>
       <div class="card-desc-g">${(s.desc || '').slice(0,100)}${s.desc && s.desc.length > 100 ? '…' : ''}</div>
@@ -1727,11 +1709,11 @@ function selectSignal(id) {
   const _ht = document.getElementById('heroTitle');
   const _hi = document.getElementById('heroInsight');
   if (_ht) _ht.textContent = s.title;
-  if (_hi) _hi.textContent = (s.desc || '') + ' · ' + (s.originLabel || s.origin || '') + ' · GAP Score ' + gapScore;
+  if (_hi) _hi.textContent = (s.desc || '') + ' · ' + (s.originLabel || s.origin || '') + ' · GAG Score ' + gapScore;
   renderHeroMedia(s);
   const badge = document.getElementById('heroBadge');
   if (badge) {
-    badge.textContent = 'GAP Score ' + gapScore;
+    badge.textContent = 'GAG Score ' + gapScore;
     badge.style.display = 'block';
   }
   gapLog('Loaded: ' + s.title);
@@ -1856,7 +1838,7 @@ function renderSignalInsight(s) {
     '<div class="insight-row"><div class="insight-body"><div class="insight-label">Market Reference</div><div class="insight-val">Industry growth: ' + growth + '</div></div></div>' +
     '<div class="insight-row"><div class="insight-body"><div class="insight-label">Average Earnings</div><div class="insight-val">' + avgEarnings + '</div></div></div>' +
     '<div class="insight-row"><div class="insight-body"><div class="insight-label">Average Cost of Entry</div><div class="insight-val">Est. startup cost: ' + costStr + '</div></div></div>' +
-    '<div class="insight-row"><div class="insight-body"><div class="insight-label">GAP Score</div><div class="insight-gauge-wrap"><div class="insight-gauge-track"><div class="insight-gauge-fill" style="width:' + metrics.gapScore + '%"></div></div><span class="insight-diff-num">' + metrics.gapScore + '/100 — Ease ' + metrics.easeOfEntry + ' · Longevity ' + metrics.longevity + ' · Viability ' + metrics.viability + '</span></div></div></div>' +
+    '<div class="insight-row"><div class="insight-body"><div class="insight-label">GAG Score</div><div class="insight-gauge-wrap"><div class="insight-gauge-track"><div class="insight-gauge-fill" style="width:' + metrics.gapScore + '%"></div></div><span class="insight-diff-num">' + metrics.gapScore + '/100 — Ease ' + metrics.easeOfEntry + ' · Longevity ' + metrics.longevity + ' · Viability ' + metrics.viability + '</span></div></div></div>' +
     '<div class="insight-row"><div class="insight-body"><div class="insight-label">Gap Thesis</div><div class="insight-val insight-thesis">' + thesis + '</div></div></div>';
   gapLog('Signal insight: ' + (s.title || s.id));
 }
@@ -1892,7 +1874,7 @@ function openModal(id) {
   if (!s) return;
   const gapScore = getGapScore(s);
   document.getElementById('modalTitle').textContent = s.title;
-  document.getElementById('modalBody').innerHTML = '<strong style="color:var(--accent)">GAP Score: ' + gapScore + '</strong><br>Region: ' + (s.originLabel || s.origin || '') + ' | Stream: ' + (s.stream || '') + '<br>Source: ' + (s.source || '') + '<br><br>' + (s.desc || '');
+  document.getElementById('modalBody').innerHTML = '<strong style="color:var(--accent)">GAG Score: ' + gapScore + '</strong><br>Region: ' + (s.originLabel || s.origin || '') + ' | Stream: ' + (s.stream || '') + '<br>Source: ' + (s.source || '') + '<br><br>' + (s.desc || '');
   document.getElementById('modalBg').classList.add('open');
   gapLog('Analyzed: ' + s.title);
 }
@@ -1962,7 +1944,7 @@ function closePipelineModal() {
 }
 
 function getPipelineConfigHTML() {
-  return '<div class="priority-alert" style="margin-bottom:16px;"><strong>Priority Alpha Sources:</strong> WIPO Patents, RetailTech Japan 2026, Tech &amp; Hardware Stream<div class="priority-led-box">Active</div></div><div class="pipeline-section"><div class="pipeline-header-row"><div class="pipeline-info"><div class="pipeline-name">Tech &amp; Hardware</div><div class="pipeline-freq">Daily scan</div></div><div class="pipeline-led led-active">Live</div></div><div class="pipeline-bar"><div class="pipeline-fill fill-active" style="width:73%"></div></div><div class="pipeline-sources"><div class="src-card"><div class="src-icon">W</div><div><div class="src-name">WIPO Patents via SerpApi</div><div class="src-desc">Keywords: unattended retail, autonomous service, modular business</div></div><div class="src-status src-live">Live</div></div><div class="src-card"><div class="src-icon">JP</div><div><div class="src-name">RetailTech Japan 2026</div><div class="src-desc">RSS - Tokyo Big Sight - Auto-translated</div></div><div class="src-status src-live">Live</div></div><div class="src-card"><div class="src-icon">CE</div><div><div class="src-name">CES 2026 Innovation Awards</div><div class="src-desc">RSS feed - official award announcements</div></div><div class="src-status src-pending">Pending</div></div><div class="src-card"><div class="src-icon">SA</div><div><div class="src-name">LEAP Conference (Riyadh)</div><div class="src-desc">RSS - Arabic - Auto-translated via Make.com</div></div><div class="src-status src-pending">Pending</div></div></div></div><div class="pipeline-section" style="margin-top:12px;"><div class="pipeline-header-row"><div class="pipeline-info"><div class="pipeline-name">Business Models</div><div class="pipeline-freq">Bi-weekly scan</div></div><div class="pipeline-led led-scheduled">Scheduled</div></div><div class="pipeline-bar"><div class="pipeline-fill fill-dim" style="width:16%"></div></div><div class="pipeline-sources"><div class="src-card"><div class="src-icon">IG</div><div><div class="src-name">Indiegogo (Innovation/Food)</div><div class="src-desc">Filter: &gt;100% funded</div></div><div class="src-status src-pending">Pending</div></div><div class="src-card"><div class="src-icon">KS</div><div><div class="src-name">Kickstarter (Innovation/Food)</div><div class="src-desc">Cross-ref for signal strength</div></div><div class="src-status src-pending">Pending</div></div></div></div><div class="antifilters" style="margin-top:12px;"><div class="antifilters-header">Pipeline Exclusions</div><div class="antifilters-grid"><div class="af-item af-reject">Dropshipping</div><div class="af-item af-reject">Print on Demand</div><div class="af-item af-reject">Affiliate Marketing</div><div class="af-item af-reject">SaaS (unless hw-linked)</div><div class="af-item af-require">100% Video Required</div><div class="af-item af-require">Auto-translate non-EN</div></div></div>';
+  return '<div class="priority-alert" style="margin-bottom:16px;"><strong>Priority Gift Sources:</strong> WIPO Patents, RetailTech Japan 2026, Tech &amp; Hardware Stream<div class="priority-led-box">Active</div></div><div class="pipeline-section"><div class="pipeline-header-row"><div class="pipeline-info"><div class="pipeline-name">Tech &amp; Hardware</div><div class="pipeline-freq">Daily scan</div></div><div class="pipeline-led led-active">Live</div></div><div class="pipeline-bar"><div class="pipeline-fill fill-active" style="width:73%"></div></div><div class="pipeline-sources"><div class="src-card"><div class="src-icon">W</div><div><div class="src-name">WIPO Patents via SerpApi</div><div class="src-desc">Keywords: unattended retail, autonomous service, modular business</div></div><div class="src-status src-live">Live</div></div><div class="src-card"><div class="src-icon">JP</div><div><div class="src-name">RetailTech Japan 2026</div><div class="src-desc">RSS - Tokyo Big Sight - Auto-translated</div></div><div class="src-status src-live">Live</div></div><div class="src-card"><div class="src-icon">CE</div><div><div class="src-name">CES 2026 Innovation Awards</div><div class="src-desc">RSS feed - official award announcements</div></div><div class="src-status src-pending">Pending</div></div><div class="src-card"><div class="src-icon">SA</div><div><div class="src-name">LEAP Conference (Riyadh)</div><div class="src-desc">RSS - Arabic - Auto-translated via Make.com</div></div><div class="src-status src-pending">Pending</div></div></div></div><div class="pipeline-section" style="margin-top:12px;"><div class="pipeline-header-row"><div class="pipeline-info"><div class="pipeline-name">Business Models</div><div class="pipeline-freq">Bi-weekly scan</div></div><div class="pipeline-led led-scheduled">Scheduled</div></div><div class="pipeline-bar"><div class="pipeline-fill fill-dim" style="width:16%"></div></div><div class="pipeline-sources"><div class="src-card"><div class="src-icon">IG</div><div><div class="src-name">Indiegogo (Innovation/Food)</div><div class="src-desc">Filter: &gt;100% funded</div></div><div class="src-status src-pending">Pending</div></div><div class="src-card"><div class="src-icon">KS</div><div><div class="src-name">Kickstarter (Innovation/Food)</div><div class="src-desc">Cross-ref for signal strength</div></div><div class="src-status src-pending">Pending</div></div></div></div><div class="antifilters" style="margin-top:12px;"><div class="antifilters-header">Pipeline Exclusions</div><div class="antifilters-grid"><div class="af-item af-reject">Dropshipping</div><div class="af-item af-reject">Print on Demand</div><div class="af-item af-reject">Affiliate Marketing</div><div class="af-item af-reject">SaaS (unless hw-linked)</div><div class="af-item af-require">100% Video Required</div><div class="af-item af-require">Auto-translate non-EN</div></div></div>';
 }
 function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
 document.addEventListener('click', e => { if (e.target.id === 'modalBg') closeModal(); });
@@ -2099,12 +2081,12 @@ function applySignalFeed(data, announce) {
   if (announce) {
     showToast('Refresh complete');
   }
-  gapLog('GAP initialized — ' + signals.length + ' signals loaded');
+  gapLog('GAG initialized — ' + signals.length + ' signals loaded');
 }
 
 function refreshSignalFeed() {
   const feedUrl = getFeedEndpoint();
-  showToast('Pulling new alpha…');
+  showToast('Pulling new items…');
   fetch(feedUrl, { cache: 'no-store' })
     .then(function(r) {
       if (!r.ok) throw new Error('Feed returned ' + r.status);
@@ -2138,6 +2120,27 @@ function restoreUiState() {
 }
 
 restoreUiState();
+
+/* ---------- carousel logic (auto-rotate) ---------- */
+(function(){
+  var carouselIdx = 0;
+  var slides = document.querySelectorAll("#carouselPanel .slide");
+  function updateCarousel(){
+    document.querySelector("#carouselPanel .carousel-inner").style.transform = "translateX(-" + (carouselIdx * 100) + "%)";
+  }
+  document.querySelector(".carousel-prev").addEventListener("click",function(){
+    carouselIdx = (carouselIdx - 1 + slides.length) % slides.length;
+    updateCarousel();
+  });
+  document.querySelector(".carousel-next").addEventListener("click",function(){
+    carouselIdx = (carouselIdx + 1) % slides.length;
+    updateCarousel();
+  });
+  setInterval(function(){
+    carouselIdx = (carouselIdx + 1) % slides.length;
+    updateCarousel();
+  }, 5000);
+})();
 </script>
 </body>
 </html>
