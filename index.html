@@ -211,24 +211,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     </aside>
   </main>
 
-  <div class="map-panel glass">
-    <div class="map-header">Global Coverage</div>
-    <svg id="worldMap" viewBox="0 0 800 400">
-      <g id="regions">
-        <path d="M60 80 L160 60 L220 80 L240 130 L210 160 L150 150 L80 130 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
-        <text x="110" y="115" fill="#5a6a72" font-size="11" font-family="Inter">N. America</text>
-        <path d="M280 100 L340 90 L370 110 L360 140 L320 150 L285 130 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
-        <text x="295" y="125" fill="#5a6a72" font-size="11" font-family="Inter">Europe</text>
-        <path d="M410 70 L560 60 L600 100 L580 160 L500 180 L430 150 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
-        <text x="480" y="115" fill="#5a6a72" font-size="11" font-family="Inter">Asia</text>
-        <path d="M310 180 L370 170 L380 240 L340 260 L295 230 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
-        <text x="315" y="215" fill="#5a6a72" font-size="9" font-family="Inter">Africa</text>
-        <path d="M120 220 L170 200 L185 280 L150 310 L105 280 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
-        <text x="118" y="260" fill="#5a6a72" font-size="9" font-family="Inter">S. Am.</text>
-      </g>
-      <g id="markers"></g>
-    </svg>
+  <div class="carousel glass">
+  <div class="carousel-inner">
+    <div class="slide" data-id="1">
+      <img src="https://images.unsplash.com/photo-1583324113626-70df0f4e0d91?w=600&q=60" alt="Smart Leather Wallet">
+      <div class="slide-caption">Smart Leather Wallet – $79</div>
+    </div>
+    <div class="slide" data-id="2">
+      <img src="https://images.unsplash.com/photo-1600185353679-1a24c99b2b23?w=600&q=60" alt="Bluetooth Beanie">
+      <div class="slide-caption">Bluetooth Beanie – $45</div>
+    </div>
+    <!-- Add more <div class="slide"> blocks for extra highlights -->
   </div>
+  <button class="carousel-prev" aria-label="Previous">‹</button>
+  <button class="carousel-next" aria-label="Next">›</button>
+</div>
 
   <button class="fab" id="captureFab" title="Capture new clip">+</button>
 
