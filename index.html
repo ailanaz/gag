@@ -7,16 +7,125 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0B0F14; --glass-bg:rgba(255,255,255,0.03); --glass-border:rgba(0,230,216,0.08);
-  --accent:#00E6D8; --accent2:#FF6EC7; --accent3:#7C3AED; --muted:#9aa7b2; --muted-dim:#5a6a72;
-  --card:#0e1114; --mono:"JetBrains Mono",monospace; --sans:Inter,system-ui; --text:#cfeeea;
+  --bg:#0B0F14;
+  --glass-bg:rgba(255,255,255,0.03);
+  --glass-border:rgba(0,230,216,0.08);
+  --accent:#00E6D8;
+  --accent2:#FF6EC7;
+  --accent3:#7C3AED;
+  --muted:#9aa7b2;
+  --muted-dim:#5a6a72;
+  --card:#0e1114;
+  --mono:"JetBrains Mono",monospace;
+  --sans:Inter,system-ui;
+  --text:#cfeeea;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans)}
 #app{min-height:100vh;padding-bottom:80px}
 
-/* (keep the full CSS you already have – omitted here for brevity) */
-</style>
+/* scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,230,216,0.2);border-radius:4px}
+
+/* glass */
+.glass{background:var(--glass-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--glass-border);border-radius:10px}
+
+/* topbar */
+.topbar{display:flex;align-items:center;gap:14px;padding:10px 20px;position:sticky;top:10px;z-index:50;margin:10px 16px 0}
+.logo{font-weight:700;color:var(--accent);letter-spacing:3px;font-size:16px;white-space:nowrap;flex-shrink:0}
+.search{flex:1;max-width:380px;background:rgba(0,0,0,0.35);border:1px solid rgba(0,230,216,0.12);padding:9px 14px;color:var(--text);border-radius:8px;font-size:13px;font-family:var(--sans);outline:none;transition:border-color .2s}
+.search:focus{border-color:rgba(0,230,216,0.35)}
+.search::placeholder{color:var(--muted-dim)}
+.controls{display:flex;gap:8px;align-items:center;margin-left:auto}
+.controls select{background:rgba(0,0,0,0.35);border:1px solid rgba(0,230,216,0.1);color:var(--muted);padding:7px 10px;border-radius:7px;font-size:12px;cursor:pointer;outline:none}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--muted);padding:7px 13px;border-radius:7px;font-size:12px;transition:border-color .2s,color .2s}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+/* hero */
+.hero{display:flex;gap:18px;padding:18px;margin:14px 16px;border-radius:14px;min-height:280px}
+.hero-left{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
+.hero-media{height:200px;background:#071018;border-radius:10px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.hero-media video{width:100%;height:100%;object-fit:cover;display:none}
+.hero-placeholder{color:var(--muted-dim);font-size:13px;position:absolute;pointer-events:none}
+.alpha-badge{position:absolute;bottom:10px;right:10px;background:var(--accent);color:#021014;font-size:11px;font-weight:700;padding:4px 12px;border-radius:12px;font-family:var(--mono);letter-spacing:.5px}
+.hero-meta h1{font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero-meta p{color:var(--muted);font-size:13px;margin-top:5px;line-height:1.5}
+.hero-workbench{width:320px;display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.wb-card{padding:13px;border-radius:8px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.03)}
+.wb-title{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.badge{background:var(--accent);color:#021014;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700}
+.templates{display:flex;gap:6px;flex-wrap:wrap}
+.templates button{background:rgba(0,230,216,0.07);border:1px solid rgba(0,230,216,0.18);color:var(--accent);padding:5px 11px;border-radius:6px;font-size:11px;transition:background .2s}
+.templates button:hover{background:rgba(0,230,216,0.18)}
+.thumb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.thumb-mini{aspect-ratio:16/9;background:#0b1014;border-radius:4px;cursor:pointer;border:1px solid transparent;transition:border-color .2s;overflow:hidden}
+.thumb-mini:hover{border-color:rgba(0,230,216,0.3)}
+.mono{font-family:var(--mono);font-size:11px;color:#7ee6d8;line-height:1.6}
+#ingestLog{max-height:56px;overflow:hidden}
+
+/* main */
+.main{display:flex;gap:16px;padding:0 16px}
+.left-col{flex:1;min-width:0}
+.right-col{width:340px;flex-shrink:0;padding:14px;position:sticky;top:90px;max-height:calc(100vh - 120px);overflow-y:auto;border-radius:10px}
+.wb-section{margin-bottom:18px}
+
+/* filters */
+.filters{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.chip-btn{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);color:var(--muted);padding:5px 13px;border-radius:20px;font-size:12px;transition:all .2s}
+.chip-btn.active{background:var(--accent);color:#021014;border-color:var(--accent);font-weight:600}
+.chip-btn:hover:not(.active){border-color:rgba(0,230,216,0.2);color:var(--text)}
+
+/* feed */
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+
+/* card */
+.media-card{display:flex;flex-direction:column;padding:12px;border:1px solid transparent;border-radius:10px;background:var(--card);transition:border-color .2s,background .2s;cursor:pointer}
+.media-card:hover{background:rgba(14,17,20,0.9);border-color:rgba(0,230,216,0.12)}
+.card-thumb{width:100%;aspect-ratio:16/9;border-radius:7px;overflow:hidden;background:#0b0e12;position:relative;margin-bottom:10px}
+.card-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.card-thumb:hover .thumb-overlay{opacity:1}
+.play-icon{color:white;font-size:22px}
+.card-meta{}
+.card-title{font-weight:600;font-size:13px;line-height:1.4;margin-bottom:7px}
+.card-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+.chip{background:rgba(255,255,255,0.04);padding:2px 8px;border-radius:10px;font-size:10px;color:var(--muted)}
+.chip.alpha{background:var(--accent);color:#021014;font-weight:700}
+.card-desc{color:var(--muted);font-size:11px;line-height:1.5;margin-bottom:8px}
+.card-actions{display:flex;gap:5px}
+.card-actions button{flex:1;padding:5px 0;border-radius:5px;border:0;background:#0b0e12;color:var(--muted);font-size:11px;transition:background .2s,color .2s}
+.card-actions button:hover{background:var(--accent);color:#021014}
+
+/* right workbench */
+.calc{display:flex;flex-direction:column;gap:8px}
+.calc label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted)}
+.calc input{background:rgba(0,0,0,0.35);border:1px solid rgba(0,230,216,0.1);padding:7px 10px;border-radius:6px;color:var(--text);font-size:12px;font-family:var(--sans);outline:none}
+.calc input:focus{border-color:rgba(0,230,216,0.3)}
+.calc-btn{background:var(--accent);border:none;color:#021014;padding:9px;border-radius:6px;font-weight:600;font-size:12px;transition:opacity .2s}
+.calc-btn:hover{opacity:.85}
+.calc-result{background:rgba(0,0,0,0.35);padding:10px;border-radius:6px;font-size:11px;line-height:1.7;margin-top:2px;min-height:40px}
+.console-log{max-height:110px;overflow-y:auto;background:#05080a;padding:10px;border-radius:6px;font-size:11px;line-height:1.6}
+
+/* queue */
+.queue{max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.queue-row{padding:7px 10px;background:rgba(255,255,255,0.02);border-radius:6px;font-size:11px;cursor:pointer;border:1px solid transparent;transition:border-color .2s}
+.queue-row:hover{border-color:rgba(0,230,216,0.15)}
+.queue-empty{color:var(--muted-dim);font-size:11px;padding:8px 0}
+
+/* map panel */
+.map-panel{position:fixed;right:20px;bottom:100px;width:280px;height:175px;padding:8px;overflow:hidden;z-index:30}
+.map-header{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:1px}
+#worldMap{width:100%;height:148px}
+
+/* fab */
+.fab{position:fixed;right:24px;bottom:26px;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(0,230,216,0.25);background:linear-gradient(135deg,var(--accent),var(--accent3));color:#021014;cursor:pointer;font-weight:700;box-shadow:0 4px 20px rgba(0,230,216,0.25);z-index:50;transition:transform .2s,box-shadow .2s}
+.fab:hover{transform:scale(1.07);box-shadow:0 6px 30px rgba(0,230,216,0.4)}
+
+/* footer */
+.footer{position:fixed;left:16px;right:16px;bottom:10px;height:44px;display:flex;align-items:center;gap:12px;padding:6px 14px;z-index:40}
+#playback{font-size:11px;color:var(--mut </style>
 </head>
 <body>
 <div id="app">
@@ -41,12 +150,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
   <section class="hero glass">
     <div class="hero-left">
       <div class="hero-media" id="heroMedia">
-        <div class="hero-placeholder" id="heroPlaceholder">Select a item to preview</div>
+        <div class="hero-placeholder" id="heroPlaceholder">Select an item to preview</div>
         <div class="alpha-badge" id="heroBadge" style="display:none"></div>
       </div>
       <div class="hero-meta">
         <h1 id="heroTitle">GAG</h1>
-        <p id="heroInsight">Hand‑picked gifts and gadgets for the modern man. Save, queue and export your favs.</p>
+        <p id="heroInsight">Hand‑picked gifts and gadgets for the modern man. Save, queue and export your favorites.</p>
       </div>
     </div>
     <aside class="hero-workbench">
@@ -102,12 +211,41 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     </aside>
   </main>
 
-  <!-- (map panel, fab, footer, modal – keep exactly as in the original) -->
+  <div class="map-panel glass">
+    <div class="map-header">Global Coverage</div>
+    <svg id="worldMap" viewBox="0 0 800 400">
+      <g id="regions">
+        <path d="M60 80 L160 60 L220 80 L240 130 L210 160 L150 150 L80 130 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="110" y="115" fill="#5a6a72" font-size="11" font-family="Inter">N. America</text>
+        <path d="M280 100 L340 90 L370 110 L360 140 L320 150 L285 130 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="295" y="125" fill="#5a6a72" font-size="11" font-family="Inter">Europe</text>
+        <path d="M410 70 L560 60 L600 100 L580 160 L500 180 L430 150 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="480" y="115" fill="#5a6a72" font-size="11" font-family="Inter">Asia</text>
+        <path d="M310 180 L370 170 L380 240 L340 260 L295 230 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="315" y="215" fill="#5a6a72" font-size="9" font-family="Inter">Africa</text>
+        <path d="M120 220 L170 200 L185 280 L150 310 L105 280 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="118" y="260" fill="#5a6a72" font-size="9" font-family="Inter">S. Am.</text>
+      </g>
+      <g id="markers"></g>
+    </svg>
+  </div>
 
+  <button class="fab" id="captureFab" title="Capture new clip">+</button>
+
+  <footer class="footer glass">
+    <div id="playback">Selected: —</div>
+    <div class="progress-wrap"><div id="progressBar"></div></div>
+  </footer>
 </div>
 
 <!-- modal -->
-<div class="modal-bg" id="modalBg"><div class="modal"><h2 id="modalTitle">Item Detail</h2><p id="modalBody"></p><button class="modal-close" onclick="closeModal()">Close</button></div></div>
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2 id="modalTitle">Item Detail</h2>
+    <p id="modalBody"></p>
+    <button class="modal-close" onclick="closeModal()">Close</button>
+  </div>
+</div>
 
 <script>
 // ─── DATA ────────────────────────────────────────────────────────────────────
@@ -121,9 +259,15 @@ const CLIPS = [
 ];
 let queue = []; let saves = []; let activeFilter = "all"; let searchQuery = ""; let selectedId = null;
 
-// (keep the rest of the script – filtering, rendering, select, save, queue, analyze, export, calc, map – exactly as in the original GAP file)
-// Only change the filter check to use `c.source` (gift/gadget) and `c.alpha` for the “Top Picks” chip.
+// ─── UTIL ─────────────────────────────────────────────────────────────────────
+function log(msg){
+  const el = document.getElementById("consoleLog");
+  const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.textContent = line + "\n" + el.textContent.slice(0,400);
+}
+function ingestLine(msg){document.getElementById("ingestLog").textContent = msg;}
 
+// ─── FILTER + RENDER ───────────────────────────────────────────────────────
 function filteredClips(){
   const src = document.getElementById("sourceFilter").value;
   const reg = document.getElementById("regionFilter").value;
@@ -136,148 +280,108 @@ function filteredClips(){
     return true;
   });
 }
+function renderFeed(){
+  const feed = document.getElementById("feed");
+  const clips = filteredClips();
+  if(!clips.length){feed.innerHTML='<div class="empty">No items match your filters</div>';return;}
+  feed.innerHTML = clips.map(c=>`
+    <article class="media-card" onclick="selectClip(${c.id})">
+      <div class="card-thumb"><img src="${c.thumb}" alt="${c.title}"/><div class="thumb-overlay"><span class="play-icon">▶</span></div></div>
+      <div class="card-meta">
+        <div class="card-title">${c.title}</div>
+        <div class="card-chips">
+          <span class="chip">${c.brand}</span>
+          <span class="chip">${c.price}</span>
+          <span class="chip alpha">Alpha ${c.alpha}</span>
+        </div>
+        <div class="card-desc">${c.desc}</div>
+        <div class="card-actions">
+          <button onclick="event.stopPropagation();saveClip(${c.id})">Save</button>
+          <button onclick="event.stopPropagation();addToQueue(${c.id})">Queue</button>
+          <button onclick="event.stopPropagation();analyzeClip(${c.id})">Analyze</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
 
-// (the rest of the JS stays the same – just the displayed fields now include `price` and `brand` in the modal)
+// ─── SELECT / HERO ────────────────────────────────────────────────────────────
+function selectClip(id){
+  const c = CLIPS.find(x=>x.id===id);
+  if(!c) return;
+  selectedId = id;
+  document.getElementById("heroPlaceholder").textContent = "";
+  document.getElementById("heroTitle").textContent = c.title;
+  document.getElementById("heroInsight").textContent = `${c.desc} • ${c.price} • Alpha ${c.alpha}`;
+  const badge = document.getElementById("heroBadge");
+  badge.textContent = `Alpha ${c.alpha}`;
+  badge.style.display = "block";
+  document.getElementById("heroMedia").style.backgroundImage = `url(${c.thumb})`;
+  document.getElementById("heroMedia").style.backgroundSize = "cover";
+  document.getElementById("heroMedia").style.backgroundPosition = "center";
+  document.getElementById("playback").textContent = `Selected: ${c.title} — ${c.brand}`;
+  document.getElementById("progressBar").style.width = Math.floor(Math.random()*60+20)+"%";
+  log(`Loaded: ${c.title}`);
+}
 
-// Example modal content change:
+// ─── SAVE ─────────────────────────────────────────────────────────────────────
+function saveClip(id){
+  const c = CLIPS.find(x=>x.id===id);
+  if(!c || saves.includes(id)) return;
+  saves.push(id);
+  document.getElementById("saveCount").textContent = saves.length;
+  renderSaves();
+  log(`Saved: ${c.title}`);
+}
+function renderSaves(){
+  const grid = document.getElementById("recentSaves");
+  grid.innerHTML = saves.slice(-8).map(id=>{
+    const c = CLIPS.find(x=>x.id===id);
+    return `<div class="thumb-mini" style="background-image:url(${c.thumb});background-size:cover;background-position:center" onclick="selectClip(${id})" title="${c.title}"></div>`;
+  }).join("");
+}
+
+// ─── QUEUE ────────────────────────────────────────────────────────────────────
+function addToQueue(id){
+  const c = CLIPS.find(x=>x.id===id);
+  if(!c || queue.includes(id)) return;
+  queue.push(id);
+  renderQueue();
+  log(`Queued: ${c.title}`);
+}
+function renderQueue(){
+  const el = document.getElementById("queue");
+  const cnt = document.getElementById("queueCount");
+  if(!queue.length){el.innerHTML='<div class="queue-empty">No items queued</div>';cnt.style.display="none";return;}
+  cnt.textContent = queue.length;
+  cnt.style.display = "inline";
+  el.innerHTML = queue.map((id,i)=>{
+    const c = CLIPS.find(x=>x.id===id);
+    return `<div class="queue-row" onclick="selectClip(${id})">${i+1}. ${c.title} <span style="color:var(--accent);font-size:10px">α${c.alpha}</span></div>`;
+  }).join("");
+}
+
+// ─── ANALYZE (modal) ────────────────────────────────────────────────────────
 function analyzeClip(id){
   const c = CLIPS.find(x=>x.id===id);
   if(!c) return;
   document.getElementById("modalTitle").textContent = c.title;
   document.getElementById("modalBody").innerHTML = `
-    <strong style="color:var(--accent)">Alpha Score: ${c.alpha}</strong><br>
-    Brand: ${c.brand}<br>
-    Price: ${c.price}<br><br>
-    ${c.desc}<br><br>
-    <strong style="color:var(--muted)">Buy</strong><br>
-    <a href="https://www.amazon.com/s?k=${encodeURIComponent(c.title)}" target="_blank" style="color:var(--accent);">Amazon link</a>
-  `;
-  document.getElementById("modalBg").classList.add("open");
-  log(`Analyzed: ${c.title}`);
-}
-</script>
-</body>
-</html>      <button class="btn-ghost" id="refreshBtn">⟳ Refresh</button>
-    </div>
-  </header>
+    <strong style="color:var(--accent)">Alpha Score: ${c.alpha}</strong #playback{font-size:11px;color:var(--muted);min-width:220px;font-family:var(--mono)}
+.progress-wrap{flex:1;height:5px;background:#0b0e12;border-radius:5px;overflow:hidden;cursor:pointer}
+#progressBar{width:0%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:5px;transition:width .4s}
 
-  <section class="hero glass">
-    <div class="hero-left">
-      <div class="hero-media" id="heroMedia">
-        <div class="hero-placeholder" id="heroPlaceholder">Select a item to preview</div>
-        <div class="alpha-badge" id="heroBadge" style="display:none"></div>
-      </div>
-      <div class="hero-meta">
-        <h1 id="heroTitle">GAG</h1>
-        <p id="heroInsight">Hand‑picked gifts and gadgets for the modern man. Save, queue and export your favs.</p>
-      </div>
-    </div>
-    <aside class="hero-workbench">
-      <div class="wb-card">
-        <div class="wb-title">Live Ingest</div>
-        <pre id="ingestLog" class="mono">idle…</pre>
-      </div>
-      <div class="wb-card">
-        <div class="wb-title">Export</div>
-        <div class="templates">
-          <button onclick="exportTemplate('Wishlist')">Wishlist</button>
-          <button onclick="exportTemplate('BuyLink')">Buy Link</button>
-        </div>
-      </div>
-      <div class="wb-card">
-        <div class="wb-title">Recent Saves <span id="saveCount" class="badge">0</span></div>
-        <div id="recentSaves" class="thumb-grid"></div>
-      </div>
-    </aside>
-  </section>
+/* no‑content */
+.empty{color:var(--muted-dim);font-size:13px;padding:40px 0;text-align:center;grid-column:1/-1}
 
-  <main class="main">
-    <div class="left-col">
-      <div class="filters">
-        <button class="chip-btn active" data-filter="all">All</button>
-        <button class="chip-btn" data-filter="gadget">Gadgets</button>
-        <button class="chip-btn" data-filter="gift">Gifts</button>
-        <button class="chip-btn" data-filter="alpha">Top Picks (α 75+)</button>
-      </div>
-      <section id="feed" class="feed"></section>
-    </div>
+/* pulse animation for map markers */
+@keyframes pulse{0%{r:4;opacity:.9}70%{r:10;opacity:0}100%{r:12;opacity:0}}
+.pulse-ring{animation:pulse 2.4s infinite}
 
-    <aside class="right-col glass">
-      <div class="wb-section">
-        <div class="wb-title">Queue <span id="queueCount" class="badge" style="display:none">0</span></div>
-        <div id="queue" class="queue"><div class="queue-empty">No items queued</div></div>
-      </div>
-      <div class="wb-section">
-        <div class="wb-title">Financial Snapshot</div>
-        <div class="calc">
-          <label>Budget ($)<input id="cost" type="number" placeholder="200"/></label>
-          <label>Growth (%/yr)<input id="growth" type="number" placeholder="0"/></label>
-          <label>Revenue / Mo ($)<input id="revenue" type="number" placeholder="0"/></label>
-          <label>TAM ($)<input id="tamsize" type="number" placeholder="0"/></label>
-          <button class="calc-btn" id="calcBtn">Generate Insight</button>
-          <pre id="calcOut" class="mono calc-result">—</pre>
-        </div>
-      </div>
-      <div class="wb-section">
-        <div class="wb-title">Console</div>
-        <pre id="consoleLog" class="mono console-log">Ready.</pre>
-      </div>
-    </aside>
-  </main>
-
-  <!-- (map panel, fab, footer, modal – keep exactly as in the original) -->
-
-</div>
-
-<!-- modal -->
-<div class="modal-bg" id="modalBg"><div class="modal"><h2 id="modalTitle">Item Detail</h2><p id="modalBody"></p><button class="modal-close" onclick="closeModal()">Close</button></div></div>
-
-<script>
-// ─── DATA ────────────────────────────────────────────────────────────────────
-const CLIPS = [
-  {id:1,title:"Smart Leather Wallet",brand:"Ekster",price:"$79",location:"Global",alpha:88,source:"gift",desc:"RFID‑blocking, Bluetooth‑trackable wallet that folds flat.",thumb:"https://images.unsplash.com/photo-1583324113626-70df0f4e0d91?w=400&q=60"},
-  {id:2,title:"Bluetooth Beanie",brand:"LuminAID",price:"$45",location:"Global",alpha:82,source:"gadget",desc:"Warm beanie with built‑in speakers – perfect for outdoor listening.",thumb:"https://images.unsplash.com/photo-1600185353679-1a24c99b2b23?w=400&q=60"},
-  {id:3,title:"Mini Drone with Camera",brand:"DJI",price:"$129",location:"Global",alpha:90,source:"gadget",desc:"Foldable 1080p pocket drone – great for quick aerial shots.",thumb:"https://images.unsplash.com/photo-1602718001865-f9b8c5e3e0f0?w=400&q=60"},
-  {id:4,title:"Whiskey Decanter Set",brand:"Bormioli",price:"$99",location:"Global",alpha:85,source:"gift",desc:"Elegant crystal decanter with twin glasses, perfect for gifting.",thumb:"https://images.unsplash.com/photo-1595967616070-2e83c4e2c406?w=400&q=60"},
-  {id:5,title:"Portable Espresso Maker",brand:"Wacaco",price:"$69",location:"Global",alpha:80,source:"gadget",desc:"Hand‑held espresso press – brew on the go.",thumb:"https://images.unsplash.com/photo-1519337265831-281ec157f578?w=400&q=60"},
-  {id:6,title:"Premium Beard Grooming Kit",brand:"Beardbrand",price:"$55",location:"Global",alpha:77,source:"gift",desc:"All‑in‑one kit with oil, balm, brush and scissors.",thumb:"https://images.unsplash.com/photo-1585161026697-fd0b693714c5?w=400&q=60"}
-];
-let queue = []; let saves = []; let activeFilter = "all"; let searchQuery = ""; let selectedId = null;
-
-// (keep the rest of the script – filtering, rendering, select, save, queue, analyze, export, calc, map – exactly as in the original GAP file)
-// Only change the filter check to use `c.source` (gift/gadget) and `c.alpha` for the “Top Picks” chip.
-
-function filteredClips(){
-  const src = document.getElementById("sourceFilter").value;
-  const reg = document.getElementById("regionFilter").value;
-  return CLIPS.filter(c=>{
-    if(activeFilter==="alpha" && c.alpha<75) return false;
-    if(activeFilter!=="all" && activeFilter!=="alpha" && c.source!==activeFilter) return false;
-    if(src!=="all" && c.source!==src) return false;
-    if(reg!=="all" && c.region!==reg) return false;
-    if(searchQuery && !c.title.toLowerCase().includes(searchQuery)) return false;
-    return true;
-  });
-}
-
-// (the rest of the JS stays the same – just the displayed fields now include `price` and `brand` in the modal)
-
-// Example modal content change:
-function analyzeClip(id){
-  const c = CLIPS.find(x=>x.id===id);
-  if(!c) return;
-  document.getElementById("modalTitle").textContent = c.title;
-  document.getElementById("modalBody").innerHTML = `
-    <strong style="color:var(--accent)">Alpha Score: ${c.alpha}</strong><br>
-    Brand: ${c.brand}<br>
-    Price: ${c.price}<br><br>
-    ${c.desc}<br><br>
-    <strong style="color:var(--muted)">Buy</strong><br>
-    <a href="https://www.amazon.com/s?k=${encodeURIComponent(c.title)}" target="_blank" style="color:var(--accent);">Amazon link</a>
-  `;
-  document.getElementById("modalBg").classList.add("open");
-  log(`Analyzed: ${c.title}`);
-}
-</script>
-</body>
-</html>
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:80;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-bg.open{opacity:1;pointer-events:auto}
+.modal{background:#0d1117;border:1px solid rgba(0,230,216,0.15);border-radius:14px;padding:24px;width:420px;max-width:94vw}
+.modal h2{font-size:16px;margin-bottom:14px;color:var(--accent)}
+.modal p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:8px}
+.modal-close{margin-top:16px;background:var(--accent);border:none;color:#021014;padding:8px 20px;border-radius:7px;font-weight:600;cursor:pointer}
