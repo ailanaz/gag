@@ -609,6 +609,9 @@ html, body { font-family: var(--sans); }
 }
 .carousel-prev{left:8px}
 .carousel-next{right:8px}
+/* carousel container positioning */
+.map-float.glass{position:fixed;right:20px;bottom:100px;width:220px;height:140px;overflow:hidden;z-index:30;}
+
 
 /* modal */
 .modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:80; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
@@ -663,12 +666,9 @@ body { padding-bottom: 0; }
     </div>
     
   </div>
-  <!-- COL 2: Ingest + Export + Saves + Social Extract -->
+  <!-- COL 2: Gift Feed + Export + Saves + Social Extract -->
   <div class="hero-col2">
-    <div class="wb-card">
-      <div class="wb-title">Live Feed</div>
-      <pre id="ingestLog" class="mono-log">scanning sources…</pre>
-    </div>
+    
     <div class="wb-card">
       <div class="wb-title">Export</div>
       <div class="wb-templates">
@@ -704,16 +704,16 @@ body { padding-bottom: 0; }
       </div>
     </div>
   </div>
-  <!-- COL 3: Queue + Financial Calc + Console -->
+  <!-- COL 3: Queued Gifts + Product Insight + Console -->
   <div class="hero-col3">
     <div class="wb-card">
-      <div class="wb-title">Queue <span class="wb-badge" id="queueCount" style="display:none">0</span></div>
+      <div class="wb-title">Queued Gifts <span class="wb-badge" id="queueCount" style="display:none">0</span></div>
       <div id="queueList" class="wb-queue"><div class="queue-empty-g">No items in queue</div></div>
     </div>
     <div class="wb-card">
-      <div class="wb-title">Analysis</div>
+      <div class="wb-title">Gift Insight</div>
       <div id="signal-insight-panel" class="signal-insight-wrap">
-        <div class="insight-placeholder">Select for analysis</div>
+        <div class="insight-placeholder">Select a gift for insight</div>
       </div>
     </div>
     
@@ -1259,8 +1259,8 @@ function marketBlock(s) {
   const monthly = monthlyRevEst(s).toLocaleString();
   const growth = marketGrowth(s);
   return `<div class="roi-row"><span class="roi-key">Avg setup</span><span class="roi-val">$${s.setupCost.toLocaleString()}</span></div>
-      <div class="roi-row"><span class="roi-key">Monthly est.</span><span class="roi-val">~$${monthly}</span></div>
-      <div class="roi-row"><span class="roi-key">Market growth</span><span class="roi-val">${growth}</span></div>`;
+      <div class="roi-row"><span class="roi-key">Est. Revenue</span><span class="roi-val">~$${monthly}</span></div>
+      <div class="roi-row"><span class="roi-key">Market Growth</span><span class="roi-val">${growth}</span></div>`;
 }
 function cardMarkup(s, { showActions=false, selectable=false }={}) {
   const selectedClass = selectable && selectedTriageId===s.id ? ' triage-selected' : '';
@@ -1271,35 +1271,35 @@ function cardMarkup(s, { showActions=false, selectable=false }={}) {
       <div class="card-header">
         <div class="card-header-left">
           <span class="card-id">${sigId(s)}</span>
-          <span class="card-stage-tag${normalizeStream(s.stream)==='tech'?' verified':''}">${normalizeStream(s.stream)==='tech'?'Score Verified':'Signal In Progress'}</span>
+          <span class="card-stage-tag${normalizeStream(s.stream)==='tech'?' verified':''}">${normalizeStream(s.stream)==='tech'?'Score Verified':'In Stock'}</span>
           <span class="card-stream ${streamClass(s.stream)}">${streamLabel(s.stream)}</span>
           <span class="card-type">${formatCode(normalizeSourceType(s.sourceType))}</span>
         </div>
         <span class="card-id" style="opacity:0.5">${signalDate(s)}</span>
       </div>
       <div class="card-body">
-        <div class="card-origin">Source: ${sourceNode} · ${s.originLabel}</div>
+        <div class="card-origin">Brand: ${sourceNode} · ${s.originLabel}</div>
         <div class="card-summary">${s.title}</div>
         <div class="card-desc">${s.desc}</div>
         <div class="roi-module">
-          <div class="roi-header"><div class="roi-led"></div>Gap Analysis · ${regionNode(s)}</div>
+          <div class="roi-header"><div class="roi-led"></div>Gift Insight · ${regionNode(s)}</div>
           <div class="roi-body">
             <div class="roi-row"><span class="roi-key">Monthly est.</span><span class="roi-val">~$${monthlyRevEst(s).toLocaleString()}</span></div>
             <div class="roi-row"><span class="roi-key">Market growth</span><span class="roi-val">${marketGrowth(s)}</span></div>
-            <div class="roi-row"><span class="roi-key">Setup cost</span><span class="roi-val">$${s.setupCost.toLocaleString()}</span></div>
+            <div class="roi-row"><span class="roi-key">Price</span><span class="roi-val">$${s.setupCost.toLocaleString()}</span></div>
           </div>
         </div>
       </div>
       <div class="card-footer">
         <span class="card-source">${s.source}</span>
-        ${showActions ? `<div class="action-btns"><button class="key-btn key-keep" onclick="keepCard(${s.id},event)">Pipeline This</button><button class="key-btn key-zap" onclick="zapCard(${s.id},event)">Discard</button></div>` : `<button class="key-btn key-keep" style="margin-left:auto" onclick="event.stopPropagation();openSignalSource(${s.id})">Source This Gap</button>`}
+        ${showActions ? `<div class="action-btns"><button class="key-btn key-keep" onclick="keepCard(${s.id},event)">Add to Queue</button><button class="key-btn key-zap" onclick="zapCard(${s.id},event)">Discard</button></div>` : `<button class="key-btn key-keep" style="margin-left:auto" onclick="event.stopPropagation();openSignalSource(${s.id})">View Insight</button>`}
       </div>
     </div>`;
 }
 
 function renderCards(data) {
   const grid = document.getElementById('cards-grid');
-  if (!data.length) { grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Items Found</div><div class="empty-desc">Adjust stream or region filters</div></div>'; return; }
+  if (!data.length) { grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Items Found</div><div class="empty-desc">Adjust filters or search terms</div></div>'; return; }
   grid.innerHTML = data.map(s => cardMarkup(s, { showActions:true, selectable:true })).join('');
 }
 
