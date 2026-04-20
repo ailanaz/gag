@@ -157,4 +157,127 @@ function analyzeClip(id){
 }
 </script>
 </body>
+</html>      <button class="btn-ghost" id="refreshBtn">⟳ Refresh</button>
+    </div>
+  </header>
+
+  <section class="hero glass">
+    <div class="hero-left">
+      <div class="hero-media" id="heroMedia">
+        <div class="hero-placeholder" id="heroPlaceholder">Select a item to preview</div>
+        <div class="alpha-badge" id="heroBadge" style="display:none"></div>
+      </div>
+      <div class="hero-meta">
+        <h1 id="heroTitle">GAG</h1>
+        <p id="heroInsight">Hand‑picked gifts and gadgets for the modern man. Save, queue and export your favs.</p>
+      </div>
+    </div>
+    <aside class="hero-workbench">
+      <div class="wb-card">
+        <div class="wb-title">Live Ingest</div>
+        <pre id="ingestLog" class="mono">idle…</pre>
+      </div>
+      <div class="wb-card">
+        <div class="wb-title">Export</div>
+        <div class="templates">
+          <button onclick="exportTemplate('Wishlist')">Wishlist</button>
+          <button onclick="exportTemplate('BuyLink')">Buy Link</button>
+        </div>
+      </div>
+      <div class="wb-card">
+        <div class="wb-title">Recent Saves <span id="saveCount" class="badge">0</span></div>
+        <div id="recentSaves" class="thumb-grid"></div>
+      </div>
+    </aside>
+  </section>
+
+  <main class="main">
+    <div class="left-col">
+      <div class="filters">
+        <button class="chip-btn active" data-filter="all">All</button>
+        <button class="chip-btn" data-filter="gadget">Gadgets</button>
+        <button class="chip-btn" data-filter="gift">Gifts</button>
+        <button class="chip-btn" data-filter="alpha">Top Picks (α 75+)</button>
+      </div>
+      <section id="feed" class="feed"></section>
+    </div>
+
+    <aside class="right-col glass">
+      <div class="wb-section">
+        <div class="wb-title">Queue <span id="queueCount" class="badge" style="display:none">0</span></div>
+        <div id="queue" class="queue"><div class="queue-empty">No items queued</div></div>
+      </div>
+      <div class="wb-section">
+        <div class="wb-title">Financial Snapshot</div>
+        <div class="calc">
+          <label>Budget ($)<input id="cost" type="number" placeholder="200"/></label>
+          <label>Growth (%/yr)<input id="growth" type="number" placeholder="0"/></label>
+          <label>Revenue / Mo ($)<input id="revenue" type="number" placeholder="0"/></label>
+          <label>TAM ($)<input id="tamsize" type="number" placeholder="0"/></label>
+          <button class="calc-btn" id="calcBtn">Generate Insight</button>
+          <pre id="calcOut" class="mono calc-result">—</pre>
+        </div>
+      </div>
+      <div class="wb-section">
+        <div class="wb-title">Console</div>
+        <pre id="consoleLog" class="mono console-log">Ready.</pre>
+      </div>
+    </aside>
+  </main>
+
+  <!-- (map panel, fab, footer, modal – keep exactly as in the original) -->
+
+</div>
+
+<!-- modal -->
+<div class="modal-bg" id="modalBg"><div class="modal"><h2 id="modalTitle">Item Detail</h2><p id="modalBody"></p><button class="modal-close" onclick="closeModal()">Close</button></div></div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const CLIPS = [
+  {id:1,title:"Smart Leather Wallet",brand:"Ekster",price:"$79",location:"Global",alpha:88,source:"gift",desc:"RFID‑blocking, Bluetooth‑trackable wallet that folds flat.",thumb:"https://images.unsplash.com/photo-1583324113626-70df0f4e0d91?w=400&q=60"},
+  {id:2,title:"Bluetooth Beanie",brand:"LuminAID",price:"$45",location:"Global",alpha:82,source:"gadget",desc:"Warm beanie with built‑in speakers – perfect for outdoor listening.",thumb:"https://images.unsplash.com/photo-1600185353679-1a24c99b2b23?w=400&q=60"},
+  {id:3,title:"Mini Drone with Camera",brand:"DJI",price:"$129",location:"Global",alpha:90,source:"gadget",desc:"Foldable 1080p pocket drone – great for quick aerial shots.",thumb:"https://images.unsplash.com/photo-1602718001865-f9b8c5e3e0f0?w=400&q=60"},
+  {id:4,title:"Whiskey Decanter Set",brand:"Bormioli",price:"$99",location:"Global",alpha:85,source:"gift",desc:"Elegant crystal decanter with twin glasses, perfect for gifting.",thumb:"https://images.unsplash.com/photo-1595967616070-2e83c4e2c406?w=400&q=60"},
+  {id:5,title:"Portable Espresso Maker",brand:"Wacaco",price:"$69",location:"Global",alpha:80,source:"gadget",desc:"Hand‑held espresso press – brew on the go.",thumb:"https://images.unsplash.com/photo-1519337265831-281ec157f578?w=400&q=60"},
+  {id:6,title:"Premium Beard Grooming Kit",brand:"Beardbrand",price:"$55",location:"Global",alpha:77,source:"gift",desc:"All‑in‑one kit with oil, balm, brush and scissors.",thumb:"https://images.unsplash.com/photo-1585161026697-fd0b693714c5?w=400&q=60"}
+];
+let queue = []; let saves = []; let activeFilter = "all"; let searchQuery = ""; let selectedId = null;
+
+// (keep the rest of the script – filtering, rendering, select, save, queue, analyze, export, calc, map – exactly as in the original GAP file)
+// Only change the filter check to use `c.source` (gift/gadget) and `c.alpha` for the “Top Picks” chip.
+
+function filteredClips(){
+  const src = document.getElementById("sourceFilter").value;
+  const reg = document.getElementById("regionFilter").value;
+  return CLIPS.filter(c=>{
+    if(activeFilter==="alpha" && c.alpha<75) return false;
+    if(activeFilter!=="all" && activeFilter!=="alpha" && c.source!==activeFilter) return false;
+    if(src!=="all" && c.source!==src) return false;
+    if(reg!=="all" && c.region!==reg) return false;
+    if(searchQuery && !c.title.toLowerCase().includes(searchQuery)) return false;
+    return true;
+  });
+}
+
+// (the rest of the JS stays the same – just the displayed fields now include `price` and `brand` in the modal)
+
+// Example modal content change:
+function analyzeClip(id){
+  const c = CLIPS.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById("modalTitle").textContent = c.title;
+  document.getElementById("modalBody").innerHTML = `
+    <strong style="color:var(--accent)">Alpha Score: ${c.alpha}</strong><br>
+    Brand: ${c.brand}<br>
+    Price: ${c.price}<br><br>
+    ${c.desc}<br><br>
+    <strong style="color:var(--muted)">Buy</strong><br>
+    <a href="https://www.amazon.com/s?k=${encodeURIComponent(c.title)}" target="_blank" style="color:var(--accent);">Amazon link</a>
+  `;
+  document.getElementById("modalBg").classList.add("open");
+  log(`Analyzed: ${c.title}`);
+}
+</script>
+</body>
 </html>
