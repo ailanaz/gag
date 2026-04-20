@@ -1,2 +1,2 @@
-# remote-radar2
+# remote.radar
 Aggregates remote jobs with posting alerts
