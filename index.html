@@ -262,6 +262,25 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 </div>
 
 <script>
+  <script>
+  /* <<< all the existing JS you already have >>> */
+
+  /* ←‑‑ paste the carousel JS right here, before the closing </script> */
+  let carouselIdx = 0;
+  const slides = document.querySelectorAll(".carousel .slide");
+  function updateCarousel(){
+    const inner = document.querySelector(".carousel-inner");
+    inner.style.transform = `translateX(-${carouselIdx * 100}%)`;
+  }
+  document.querySelector(".carousel-prev").addEventListener("click",()=>{
+    carouselIdx = (carouselIdx - 1 + slides.length) % slides.length;
+    updateCarousel();
+  });
+  document.querySelector(".carousel-next").addEventListener("click",()=>{
+    carouselIdx = (carouselIdx + 1) % slides.length;
+    updateCarousel();
+  });
+</script>
 // ─── DATA ────────────────────────────────────────────────────────────────────
 const CLIPS = [
   {id:1,title:"Smart Leather Wallet",brand:"Ekster",price:"$79",location:"Global",alpha:88,source:"gift",desc:"RFID‑blocking, Bluetooth‑trackable wallet that folds flat.",thumb:"https://images.unsplash.com/photo-1583324113626-70df0f4e0d91?w=400&q=60"},
