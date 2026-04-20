@@ -1,2143 +1,511 @@
-<!DOCTYPE html>
-
-
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#000000">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>GAP — Global Alpha Pipeline</title>
-<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root {
-    --base: #0B0F14;
-
-    --bg: #0B0F14;
-    --panel: rgba(255,255,255,0.03);
-    --panel-alt: rgba(255,255,255,0.05);
-    --module: rgba(0,230,216,0.04);
-    --inset: rgba(0,0,0,0.32);
-    --sidebar: #090B10;
-    --border-inactive: rgba(255,255,255,0.08);
-    --border-blue: #5C7AB8;
-    --border-blue-soft: rgba(92,122,184,0.28);
-    --blue-highlight: #00E6D8;
-    --blue-highlight-soft: rgba(0,230,216,0.12);
-    --signal-green: #00E6D8;
-    --signal-green-soft: rgba(0,230,216,0.10);
-    --accent: #00E6D8;
-    --accent2: #FF6EC7;
-    --accent3: #7C3AED;
-    --glass-bg: rgba(255,255,255,0.03);
-    --glass-border: rgba(0,230,216,0.08);
-    --glass-hover: rgba(0,230,216,0.15);
-    --glass-blur: blur(12px);
-    --radius-card: 10px;
-    --text-bright: #00E6D8;
-    --text-mid: #9aa7b2;
-    --text-dim: #5a6a7a;
-    --text-ghost: #2e3d4d;
-    --text: #cfeeea;
-    --muted: #9aa7b2;
-    --muted-dim: #5a6a72;
-    --card: #0e1114;
-    --mono: 'Geist Mono', monospace;
-    --sans: Inter, system-ui;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; box-shadow: none !important; text-shadow: none !important; filter: none !important; }
-  *::before, *::after { box-shadow: none !important; text-shadow: none !important; filter: none !important; }
-
-  html, body { background: #0B0F14; background: var(--bg, #0B0F14); }
-
-  body {
-    font-family: var(--mono);
-    background: var(--base);
-    color: var(--text-bright);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    font-size: 12px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  button, input, textarea, select { font-family: var(--mono); }
-
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 0 28px;
-    min-height: 70px;
-    border-bottom: 2px solid var(--border-blue);
-    background: var(--panel);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .logo { display: flex; align-items: center; gap: 12px; }
-
-  .logo-mark {
-    width: 34px; height: 34px;
-    border: 2px solid var(--blue-highlight);
-    background: var(--module);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 800;
-    color: var(--blue-highlight);
-    letter-spacing: 0.18em;
-  }
-
-  .logo-text { font-size: 13px; font-weight: 800; letter-spacing: 0.24em; color: var(--text-bright); text-transform: uppercase; }
-
-  .logo-sub { display: block; font-size: 9px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
-.logo-img {
-  height: 80px;
-  width: auto;
-  display: block;
+:root{
+  --bg:#0B0F14;
+  --glass-bg:rgba(255,255,255,0.03);
+  --glass-border:rgba(0,230,216,0.08);
+  --accent:#00E6D8;
+  --accent2:#FF6EC7;
+  --accent3:#7C3AED;
+  --muted:#9aa7b2;
+  --muted-dim:#5a6a72;
+  --card:#0e1114;
+  --mono:"JetBrains Mono",monospace;
+  --sans:Inter,system-ui;
+  --text:#cfeeea;
 }
-.logo-title {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-mid);
-  white-space: nowrap;
-}
-
-  .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
-
-  .header-readout {
-    font-size: 9px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase;
-    padding: 6px 10px; border: 1px solid var(--border-blue-soft); background: var(--module);
-  }
-
-  .header-readout strong { color: var(--blue-highlight); font-weight: 700; }
-
-  .led-status {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--border-blue); padding: 6px 10px;
-    border: 2px solid var(--border-blue-soft); background: var(--module);
-  }
-
-  .led-dot { width: 8px; height: 8px; background: var(--border-blue); animation: led-pulse 1.6s steps(2, end) infinite; }
-
-  @keyframes led-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-
-  nav { display: flex; gap: 0; padding: 0 28px; background: var(--panel); border-bottom: 1px solid var(--border-inactive); }
-
-  .nav-tab {
-    padding: 14px 18px; cursor: pointer; color: rgba(0,230,216,0.5);
-    font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-    border-right: 1px solid var(--border-inactive); border-bottom: 2px solid transparent;
-    transition: border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
-    display: flex; align-items: center; gap: 8px;
-    user-select: none; background: var(--panel); white-space: nowrap;
-  }
-
-  .nav-tab:hover { color: rgba(0,230,216,0.85); border-bottom-color: rgba(0,230,216,0.6); background: var(--module); }
-  .nav-tab.active { color: var(--signal-green); border-bottom-color: var(--signal-green); background: var(--module); }
-
-  .nav-count { font-size: 9px; font-weight: 700; padding: 2px 6px; background: var(--inset); border: 1px solid var(--blue-highlight-soft); color: var(--blue-highlight); }
-
-  main { flex: 1; padding: 28px 32px 40px; max-width: 1480px; width: 100%; margin: 0 auto; }
-
-  .view { display: none; }
-  .view.active { display: block; }
-
-  .section-header {
-    display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
-    margin-bottom: 24px; padding: 0 0 14px; border-bottom: 2px solid var(--border-inactive);
-  }
-
-  .section-title { font-size: 16px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--border-blue); line-height: 1.4; }
-  .section-subtitle { font-size: 10px; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.12em; text-transform: uppercase; }
-
-  .btn {
-    padding: 8px 14px; font-size: 10px; font-weight: 700; cursor: pointer;
-    border: 2px solid var(--border-inactive); text-transform: uppercase; letter-spacing: 0.14em;
-    transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
-    background: var(--module); color: var(--text-bright);
-  }
-
-  .btn-signal { background: rgba(0,230,216,0.08); color: rgba(0,230,216,0.75); border-color: rgba(0,230,216,0.45); }
-  .btn-signal:hover { background: rgba(0,230,216,0.16); color: var(--signal-green); border-color: var(--signal-green); }
-  .btn-ghost { background: var(--module); color: var(--border-blue); border-color: var(--border-blue); }
-  .btn-ghost:hover { background: rgba(46, 91, 255, 0.10); }
-
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
-
-  .stat-module { background: var(--panel); border: 2px solid var(--border-inactive); padding: 18px 20px; }
-  .stat-module:hover { border-color: var(--border-blue); }
-
-  .stat-module-label {
-    font-size: 8px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--border-blue); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-  }
-
-  .stat-module-label::before { content: ''; width: 6px; height: 6px; border: 1px solid var(--border-blue); background: transparent; }
-  .stat-module-label.active::before { background: var(--border-blue); border-color: var(--border-blue); }
-
-  .stat-val { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; color: var(--text-bright); }
-  .stat-val-lit { color: var(--text-mid); }
-  .stat-sub { font-size: 9px; color: var(--text-ghost); margin-top: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-  .filter-bar {
-    display: flex; align-items: center; gap: 6px; margin-bottom: 20px;
-    padding: 12px 16px; background: var(--panel); border: 2px solid var(--border-inactive); flex-wrap: wrap;
-  }
-
-  .filter-label { font-size: 9px; font-weight: 700; color: var(--border-blue); letter-spacing: 0.14em; text-transform: uppercase; margin-right: 8px; }
-
-  .filter-key {
-    padding: 5px 10px; font-size: 10px; font-weight: 600; cursor: pointer;
-    border: 1px solid rgba(0,230,216,0.18); background: var(--module); color: rgba(0,230,216,0.55);
-    transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
-    user-select: none; letter-spacing: 0.06em; text-transform: uppercase;
-  }
-
-  .filter-key:hover { border-color: rgba(0,230,216,0.65); color: rgba(0,230,216,0.9); background: rgba(0,230,216,0.05); }
-  .filter-key.active { background: rgba(0,230,216,0.08); color: var(--signal-green); border-color: var(--signal-green); }
-  .filter-sep { width: 1px; height: 18px; background: var(--border-inactive); margin: 0 8px; }
-
-  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 14px; }
-
-  .signal-card {
-    background: var(--panel); border: 2px solid var(--border-inactive);
-    transition: border-color 0.12s ease, background-color 0.12s ease, opacity 0.12s ease;
-    position: relative;
-  }
-
-  .signal-card:hover { border-color: var(--border-blue); background: var(--panel-alt); z-index: 1; }
-  .signal-card[data-origin="asia"] { border-color: var(--border-blue); }
-  .signal-card.triage-selected { border-color: var(--signal-green) !important; }
-
-  .card-header {
-    padding: 10px 16px; background: var(--module); border-bottom: 1px solid var(--border-inactive);
-    display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  }
-
-  .card-header-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .card-id { font-size: 9px; font-weight: 700; color: var(--border-blue); letter-spacing: 0.14em; text-transform: uppercase; }
-
-  .card-stream, .card-type {
-    font-size: 8px; font-weight: 700; letter-spacing: 0.14em; padding: 3px 7px;
-    text-transform: uppercase; border: 1px solid var(--border-blue); color: var(--border-blue); background: var(--inset);
-  }
-
-  .stream-a, .stream-b, .stream-c { border-color: var(--border-blue); color: var(--border-blue); }
-
-  .card-body { padding: 16px 18px; }
-
-  .card-origin {
-    font-size: 9px; color: var(--border-blue); margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px; letter-spacing: 0.12em; text-transform: uppercase; flex-wrap: wrap;
-  }
-
-  .card-origin::before { content: ''; width: 6px; height: 6px; border: 1px solid var(--border-blue); background: transparent; }
-
-  .card-title { font-size: 13px; font-weight: 700; line-height: 1.5; margin-bottom: 8px; color: var(--text-bright); letter-spacing: 0.10em; text-transform: uppercase; }
-  .card-summary { font-size: 10px; font-weight: 700; color: var(--text-mid); letter-spacing: 0.04em; margin-bottom: 10px; }
-  .card-desc { font-size: 11px; color: var(--text-mid); line-height: 1.75; margin-bottom: 14px; text-align: justify; text-justify: inter-word; }
-
-  .roi-module { background: var(--module); border: 2px solid var(--border-blue-soft); padding: 0; margin-bottom: 14px; }
-
-  .roi-header {
-    padding: 6px 10px; background: rgba(110, 136, 201, 0.04); border-bottom: 1px solid var(--border-inactive);
-    font-size: 8px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--border-blue); display: flex; align-items: center; gap: 8px;
-  }
-
-  .roi-led { width: 6px; height: 6px; background: var(--border-blue); }
-  .roi-body { padding: 10px; }
-  .roi-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(110,136,201,0.10); }
-  .roi-row:last-child { border-bottom: none; }
-  .roi-key { font-size: 9px; font-weight: 700; color: var(--text-ghost); letter-spacing: 0.12em; }
-  .roi-val { font-size: 13px; font-weight: 800; color: var(--text-mid); letter-spacing: 0.04em; }
-  .roi-text { font-size: 12px; font-weight: 700; color: var(--text-mid); letter-spacing: 0.08em; text-transform: uppercase; }
-
-  .card-footer {
-    padding: 12px 16px; border-top: 1px solid var(--border-inactive);
-    display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--module);
-  }
-
-  .card-source { font-size: 9px; color: var(--border-blue); letter-spacing: 0.08em; text-transform: uppercase; }
-  .action-btns { display: flex; gap: 6px; }
-
-  .key-btn {
-    padding: 6px 12px; font-size: 9px; font-weight: 700; cursor: pointer;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
-    border: 2px solid var(--border-inactive); background: var(--module);
-  }
-
-  .key-keep { background: rgba(0,230,216,0.08); color: rgba(0,230,216,0.7); border-color: rgba(0,230,216,0.4); }
-  .key-keep:hover { background: rgba(0,230,216,0.18); color: var(--signal-green); border-color: var(--signal-green); }
-  .key-zap { color: var(--border-blue); border-color: var(--border-blue); }
-  .key-zap:hover { background: rgba(46, 91, 255, 0.10); }
-  .key-keep:active { background: rgba(0,230,216,0.28); color: var(--signal-green); border-color: var(--signal-green); }
-  .btn-signal:active { background: rgba(0,230,216,0.28); color: var(--signal-green); border-color: var(--signal-green); }
-  .filter-key:active { background: rgba(0,230,216,0.20); color: var(--signal-green); border-color: var(--signal-green); }
-  .nav-tab:active { color: var(--signal-green); border-bottom-color: var(--signal-green); }
-
-  .map-container { background: var(--panel); border: 2px solid var(--border-inactive); margin-bottom: 24px; }
-
-  .map-header {
-    padding: 12px 16px; background: var(--module); border-bottom: 1px solid var(--border-inactive);
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    font-size: 10px; color: var(--border-blue); letter-spacing: 0.10em; text-transform: uppercase;
-  }
-
-  .map-canvas {
-    width: 100%; height: 400px;
-    background: linear-gradient(rgba(110, 136, 201, 0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(110, 136, 201, 0.14) 1px, transparent 1px), var(--panel-alt);
-    background-size: 36px 36px, 36px 36px, auto;
-    position: relative; border-bottom: 1px solid var(--border-inactive); overflow: hidden;
-  }
-
-  .map-base { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; opacity: 0.94; }
-  .map-overlay { position: absolute; inset: 0; width: 100%; height: 100%; }
-
-  .map-coordinate { fill: var(--border-blue); font-size: 8px; font-family: var(--mono); font-weight: 700; letter-spacing: 0.08em; }
-  .map-city { fill: var(--text-mid); font-size: 8px; font-family: var(--mono); font-weight: 600; letter-spacing: 0.08em; }
-  .map-count { fill: var(--blue-highlight); font-size: 9px; font-family: var(--mono); font-weight: 700; letter-spacing: 0.1em; }
-
-  .region-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
-
-  .region-module {
-    background: var(--panel); border-right: 1px solid var(--border-inactive); padding: 18px 20px;
-    cursor: pointer; transition: border-color 0.12s ease, background-color 0.12s ease; border-top: 2px solid transparent;
-  }
-
-  .region-module:last-child { border-right: none; }
-  .region-module:hover { background: var(--module); border-top-color: var(--border-blue); }
-  .region-module.active { background: var(--module); border-top-color: var(--signal-green); }
-
-  .region-label { font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--border-blue); margin-bottom: 6px; }
-  .region-val { font-size: 28px; font-weight: 800; color: var(--text-bright); letter-spacing: -0.04em; }
-  .region-module.active .region-val { color: var(--signal-green); }
-  .region-sub { font-size: 9px; color: var(--text-ghost); margin-top: 4px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-  .hub-grid { display: grid; grid-template-columns: 1fr 420px; gap: 14px; }
-
-  .hub-list-panel, .detail-panel { background: var(--panel); border: 2px solid var(--border-inactive); }
-
-  .hub-list-header, .detail-header, .copy-module-header {
-    padding: 10px 16px; background: var(--module); border-bottom: 1px solid var(--border-inactive);
-    font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--border-blue);
-  }
-
-  .hub-item { padding: 16px 18px; border-bottom: 1px solid var(--border-inactive); cursor: pointer; transition: border-color 0.12s ease, background-color 0.12s ease; }
-  .hub-item:hover { background: var(--module); }
-  .hub-item.selected { background: var(--module); border-left: 2px solid var(--signal-green); }
-
-  .hub-item-id, .hub-item-source, .detail-header-label, .detail-origin, .detail-key { font-size: 9px; color: var(--border-blue); letter-spacing: 0.12em; text-transform: uppercase; }
-  .hub-item-id { margin-bottom: 6px; }
-
-  .hub-item-title, .detail-title { font-size: 12px; font-weight: 700; color: var(--text-bright); letter-spacing: 0.04em; line-height: 1.6; }
-  .hub-item-summary { font-size: 10px; font-weight: 700; color: var(--text-mid); letter-spacing: 0.08em; text-transform: uppercase; margin: 8px 0 6px; }
-  .hub-item-roi { font-size: 10px; color: var(--text-mid); margin-bottom: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
-
-  .detail-panel { position: sticky; top: 96px; }
-  .detail-header { padding: 12px 16px; }
-  .detail-header-label { margin-bottom: 8px; }
-  .detail-origin { margin-top: 6px; }
-  .detail-body { padding: 16px 18px; }
-
-  .detail-row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid var(--border-inactive); }
-  .detail-row:last-child { border-bottom: none; }
-
-  .detail-val { font-size: 11px; font-weight: 600; color: var(--text-mid); text-align: right; letter-spacing: 0.02em; }
-  .detail-val-signal { color: var(--text-mid); }
-
-  .copy-module { background: var(--module); border: 2px solid var(--border-blue-soft); margin-top: 14px; }
-  .copy-module-header { padding: 8px 10px; }
-  .copy-module-body { padding: 12px 10px; }
-  .copy-text { font-size: 11px; color: var(--text-mid); line-height: 1.75; text-align: justify; text-justify: inter-word; }
-  .copy-actions { display: flex; gap: 6px; margin-top: 10px; }
-
-  .pipeline-section { margin-bottom: 24px; }
-
-  .pipeline-header-row {
-    display: flex; align-items: center; gap: 18px; padding: 18px 20px;
-    background: var(--panel); border: 2px solid var(--border-inactive); border-bottom: none;
-  }
-
-  .pipeline-pct { font-size: 36px; font-weight: 800; letter-spacing: -0.06em; color: var(--border-blue); min-width: 74px; }
-  .pipeline-pct-lit { color: var(--border-blue); }
-  .pipeline-info { flex: 1; }
-  .pipeline-name { font-size: 12px; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.03em; color: var(--text-bright); }
-  .pipeline-freq { font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
-
-  .pipeline-led, .src-status, .priority-led-box {
-    font-size: 8px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-    padding: 5px 10px; border: 2px solid var(--border-inactive);
-    display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
-  }
-
-  .led-active, .src-live, .priority-led-box { background: var(--blue-highlight-soft); color: var(--border-blue); border-color: var(--border-blue); }
-  .led-active::before, .src-live::before { content: ''; width: 6px; height: 6px; background: var(--border-blue); }
-  .led-scheduled, .src-pending { background: rgba(46, 91, 255, 0.10); color: var(--border-blue); border-color: var(--border-blue); }
-  .led-idle, .src-idle { background: var(--module); color: var(--text-ghost); border-color: var(--border-inactive); }
-
-  .pipeline-bar { height: 10px; background: var(--module); border-left: 2px solid var(--border-inactive); border-right: 2px solid var(--border-inactive); }
-  .pipeline-fill { height: 100%; transition: width 1s ease; }
-  .fill-active { background: var(--border-blue); }
-  .fill-dim { background: var(--border-blue); }
-
-  .pipeline-sources { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0; border: 2px solid var(--border-inactive); border-top: none; }
-
-  .src-card { background: var(--panel); padding: 16px 18px; display: flex; align-items: flex-start; gap: 14px; border-bottom: 1px solid var(--border-inactive); border-right: 1px solid var(--border-inactive); }
-
-  .src-icon { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; background: var(--module); border: 2px solid var(--border-blue); color: var(--border-blue); flex-shrink: 0; }
-  .src-name { font-size: 11px; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.02em; color: var(--text-bright); }
-  .src-desc { font-size: 10px; color: var(--text-mid); line-height: 1.7; text-align: justify; text-justify: inter-word; }
-  .src-status { margin-left: auto; }
-
-  .priority-alert { background: var(--module); border: 2px solid var(--border-inactive); padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 11px; color: var(--text-mid); text-align: justify; }
-  .priority-alert strong { color: var(--border-blue); letter-spacing: 0.10em; }
-  .priority-led-box { margin-left: auto; }
-
-  .antifilters { background: var(--panel); border: 2px solid var(--border-inactive); margin-top: 8px; }
-  .antifilters-header { padding: 10px 14px; background: var(--module); border-bottom: 1px solid var(--border-inactive); font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--border-blue); }
-  .antifilters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0; padding: 0; }
-
-  .af-item { padding: 10px 12px; font-size: 10px; font-weight: 600; border-bottom: 1px solid var(--border-inactive); border-right: 1px solid var(--border-inactive); display: flex; align-items: center; gap: 8px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .af-item::before { content: ''; width: 6px; height: 6px; flex-shrink: 0; border: 1px solid currentColor; background: transparent; }
-  .af-reject { color: var(--border-blue); background: rgba(46, 91, 255, 0.06); }
-  .af-require { color: var(--text-mid); background: rgba(110, 136, 201, 0.06); }
-
-  .empty-state { text-align: center; padding: 50px 20px; color: var(--text-dim); border: 2px dashed var(--border-inactive); background: var(--panel); }
-  .empty-title { font-size: 12px; font-weight: 700; color: var(--border-blue); margin-bottom: 6px; letter-spacing: 0.10em; text-transform: uppercase; }
-  .empty-desc { font-size: 10px; color: var(--text-ghost); letter-spacing: 0.02em; }
-
-  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--panel); border: 2px solid var(--border-blue); padding: 10px 16px; font-size: 11px; color: var(--text-bright); z-index: 999; transform: translateY(80px); opacity: 0; transition: transform 0.2s ease, opacity 0.2s ease; pointer-events: none; letter-spacing: 0.08em; text-transform: uppercase; }
-  .toast.show { transform: translateY(0); opacity: 1; }
-
-  .scrollable-list { max-height: 560px; overflow-y: auto; }
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--base); }
-  ::-webkit-scrollbar-thumb { background: var(--border-blue); }
-
-  @media (max-width: 1000px) {
-    .stats-row { grid-template-columns: repeat(3, 1fr); }
-    .hub-grid { grid-template-columns: 1fr; }
-    .region-strip { grid-template-columns: repeat(2, 1fr); }
-    .detail-panel { position: static; }
-  }
-
-  @media (max-width: 700px) {
-    nav { overflow-x: auto; padding: 0 16px; }
-    main { padding: 18px 16px 32px; }
-    .stats-row { grid-template-columns: repeat(2, 1fr); }
-    .cards-grid { grid-template-columns: 1fr; }
-    header { padding: 12px 16px; align-items: flex-start; }
-    .header-readout { display: none; }
-    .section-header { flex-direction: column; align-items: flex-start; }
-    .pipeline-header-row, .priority-alert { flex-direction: column; align-items: flex-start; }
-    .priority-led-box, .src-status { margin-left: 0; }
-  }
-
-  
-/* ── Social Extract ── */
-.social-extract { border-top: 1px solid var(--border-inactive); margin-top: 16px; padding-top: 14px; }
-.social-extract-header { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-ghost); margin-bottom: 10px; }
-.social-format-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
-.fmt-tab { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 12px; border-radius: 4px; border: 1px solid var(--border-inactive); background: transparent; color: var(--text-dim); cursor: pointer; }
-.fmt-tab.active { border-color: var(--signal-green); color: var(--signal-green); background: var(--signal-green-soft); }
-.social-caption-box { background: var(--inset); border-radius: 6px; padding: 12px; margin-bottom: 10px; }
-.social-caption-label { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-ghost); margin-bottom: 6px; }
-.social-caption-text { font-size: 12px; line-height: 1.6; color: var(--text-bright); white-space: pre-wrap; font-family: var(--mono); }
-.social-meta { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-.social-meta-item { font-size: 10px; color: var(--text-dim); background: var(--panel); border-radius: 4px; padding: 4px 8px; }
-.social-copy-btn { width: 100%; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 8px; border-radius: 6px; border: 1px solid var(--signal-green); background: transparent; color: var(--signal-green); cursor: pointer; transition: background 0.15s; }
-.social-copy-btn:hover { background: var(--signal-green-soft); }
-.social-copy-btn.copied { background: var(--signal-green-soft); }
-
-/* ── Financial Insights Calc ── */
-.financial-calc { padding: 14px 0 4px; }
-.fc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-.fc-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-ghost); display: flex; flex-direction: column; gap: 4px; }
-.fc-input { background: var(--inset); border: 1px solid var(--border-inactive); border-radius: 4px; padding: 7px 10px; color: var(--text-bright); font-size: 12px; font-family: var(--mono); width: 100%; }
-.fc-input:focus { outline: none; border-color: var(--signal-green); }
-.fc-output { margin-top: 12px; font-size: 11px; line-height: 1.7; color: var(--text-mid); font-family: var(--mono); }
-.fc-output .fc-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border-inactive); }
-.fc-output .fc-row-val { color: var(--signal-green); font-weight: 700; }
-.fc-output .fc-tag { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-top: 8px; letter-spacing: 0.08em; text-transform: uppercase; }
-.fc-output .fc-tag-good { background: var(--signal-green-soft); color: var(--signal-green); }
-.fc-output .fc-tag-caution { background: rgba(255,200,0,0.1); color: #ffc800; }
-
-/* ── gap.html design system ── */
-html, body { font-family: var(--sans); }
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,230,216,0.2); border-radius: 4px; }
-
-.glass { background: var(--glass-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-border); border-radius: var(--radius-card); }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans)}
+#app{min-height:100vh;padding-bottom:80px}
+
+/* scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,230,216,0.2);border-radius:4px}
+
+/* glass */
+.glass{background:var(--glass-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--glass-border);border-radius:10px}
 
 /* topbar */
-.topbar { display:flex; align-items:center; gap:14px; padding:10px 20px; position:sticky; top:10px; z-index:50; margin:10px 16px 0; }
-.topbar-logo { font-weight:700; color:var(--accent); letter-spacing:3px; font-size:16px; white-space:nowrap; flex-shrink:0; display:flex; align-items:center; gap:10px; }
-.topbar-logo img { height:40px !important; width:auto !important; max-height:40px !important; display:block !important; }
-
-.topbar-controls { display:flex; gap:8px; align-items:center; margin-left:auto; }
-.topbar-title { font-size:13px; font-weight:600; color:var(--text); font-family:var(--mono); letter-spacing:0.04em; opacity:0.85; white-space:nowrap; }
-
-.btn-topbar { background:transparent; border:1px solid rgba(255,255,255,0.08); color:var(--muted); padding:7px 13px; border-radius:7px; font-size:12px; cursor:pointer; transition:border-color .2s,color .2s; font-family:var(--mono); letter-spacing:0.08em; }
-.btn-topbar:hover { border-color:var(--accent); color:var(--accent); }
+.topbar{display:flex;align-items:center;gap:14px;padding:10px 20px;position:sticky;top:10px;z-index:50;margin:10px 16px 0}
+.logo{font-weight:700;color:var(--accent);letter-spacing:3px;font-size:16px;white-space:nowrap;flex-shrink:0}
+.search{flex:1;max-width:380px;background:rgba(0,0,0,0.35);border:1px solid rgba(0,230,216,0.12);padding:9px 14px;color:var(--text);border-radius:8px;font-size:13px;font-family:var(--sans);outline:none;transition:border-color .2s}
+.search:focus{border-color:rgba(0,230,216,0.35)}
+.search::placeholder{color:var(--muted-dim)}
+.controls{display:flex;gap:8px;align-items:center;margin-left:auto}
+.controls select{background:rgba(0,0,0,0.35);border:1px solid rgba(0,230,216,0.1);color:var(--muted);padding:7px 10px;border-radius:7px;font-size:12px;cursor:pointer;outline:none}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.08);color:var(--muted);padding:7px 13px;border-radius:7px;font-size:12px;transition:border-color .2s,color .2s}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
 
 /* hero */
-.hero { display:grid; grid-template-columns:270px 1fr 1fr; gap:16px; padding:18px; margin:14px 16px; border-radius:14px; align-items:start; }
+.hero{display:flex;gap:18px;padding:18px;margin:14px 16px;border-radius:14px;min-height:280px}
+.hero-left{flex:1;display:flex;flex-direction:column;gap:12px;min-width:0}
+.hero-media{height:200px;background:#071018;border-radius:10px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.hero-media video{width:100%;height:100%;object-fit:cover;display:none}
+.hero-placeholder{color:var(--muted-dim);font-size:13px;position:absolute;pointer-events:none}
+.alpha-badge{position:absolute;bottom:10px;right:10px;background:var(--accent);color:#021014;font-size:11px;font-weight:700;padding:4px 12px;border-radius:12px;font-family:var(--mono);letter-spacing:.5px}
+.hero-meta h1{font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hero-meta p{color:var(--muted);font-size:13px;margin-top:5px;line-height:1.5}
+.hero-workbench{width:320px;display:flex;flex-direction:column;gap:10px;flex-shrink:0}
+.wb-card{padding:13px;border-radius:8px;background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.03)}
+.wb-title{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:9px;display:flex;align-items:center;gap:6px}
+.badge{background:var(--accent);color:#021014;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700}
+.templates{display:flex;gap:6px;flex-wrap:wrap}
+.templates button{background:rgba(0,230,216,0.07);border:1px solid rgba(0,230,216,0.18);color:var(--accent);padding:5px 11px;border-radius:6px;font-size:11px;transition:background .2s}
+.templates button:hover{background:rgba(0,230,216,0.18)}
+.thumb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.thumb-mini{aspect-ratio:16/9;background:#0b1014;border-radius:4px;cursor:pointer;border:1px solid transparent;transition:border-color .2s;overflow:hidden}
+.thumb-mini:hover{border-color:rgba(0,230,216,0.3)}
+.mono{font-family:var(--mono);font-size:11px;color:#7ee6d8;line-height:1.6}
+#ingestLog{max-height:56px;overflow:hidden}
 
-.hero-left { display:flex; flex-direction:column; gap:12px; flex-shrink:0; }
-.hero-media { width:270px; aspect-ratio:9/16; background:#071018; border-radius:12px; overflow:hidden; position:relative; display:flex; align-items:center; justify-content:center; cursor:pointer; background-size:cover; background-position:center; flex-shrink:0; }
-.hero-media iframe,
-.hero-media img,
-.hero-media video { width:100%; height:100%; border:0; object-fit:cover; display:block; background:#05070b; }
-.hero-placeholder { color:var(--muted-dim); font-size:13px; position:absolute; pointer-events:none; font-family:var(--mono); }
-.alpha-badge { position:absolute; bottom:10px; right:10px; background:var(--accent); color:#021014; font-size:11px; font-weight:700; padding:4px 12px; border-radius:12px; font-family:var(--mono); letter-spacing:.5px; }
-.hero-meta h1 { font-size:16px; font-weight:600; color:var(--text); font-family:var(--sans); }
-.hero-meta p { color:var(--muted); font-size:12px; margin-top:5px; line-height:1.5; font-family:var(--sans); }
-.hero-col2 { display:flex; flex-direction:column; gap:8px; min-width:0; }
-.hero-col3 { display:flex; flex-direction:column; gap:8px; min-width:0; }
-.wb-card { padding:12px; border-radius:8px; background:rgba(255,255,255,0.015); border:1px solid rgba(255,255,255,0.04); }
-.wb-title { font-size:10px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:8px; display:flex; align-items:center; gap:6px; font-family:var(--mono); }
-.wb-badge { background:var(--accent); color:#021014; padding:1px 7px; border-radius:10px; font-size:10px; font-weight:700; }
-.wb-templates { display:flex; gap:6px; flex-wrap:wrap; }
-.wb-templates button { background:rgba(0,230,216,0.07); border:1px solid rgba(0,230,216,0.18); color:var(--accent); padding:5px 11px; border-radius:6px; font-size:11px; cursor:pointer; transition:background .2s; font-family:var(--mono); letter-spacing:0.06em; }
-.wb-templates button:hover { background:rgba(0,230,216,0.18); }
-.thumb-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
-.thumb-mini { aspect-ratio:16/9; background:#0b1014; border-radius:4px; cursor:pointer; border:1px solid transparent; transition:border-color .2s; overflow:hidden; background-size:cover; background-position:center; }
-.thumb-mini:hover { border-color:rgba(0,230,216,0.3); }
-.thumb-mini.empty { display:flex; align-items:center; justify-content:center; color:var(--muted-dim); font-size:9px; text-transform:uppercase; letter-spacing:0.08em; }
-.mono-log { font-family:var(--mono); font-size:11px; color:var(--accent); line-height:1.6; }
+/* main */
+.main{display:flex;gap:16px;padding:0 16px}
+.left-col{flex:1;min-width:0}
+.right-col{width:340px;flex-shrink:0;padding:14px;position:sticky;top:90px;max-height:calc(100vh - 120px);overflow-y:auto;border-radius:10px}
+.wb-section{margin-bottom:18px}
 
-/* main layout */
-.gap-main { display:flex; gap:16px; padding:0 16px; margin-top:14px; }
-.gap-left-col { flex:1; min-width:0; }
-.wb-section { margin-bottom:18px; }
+/* filters */
+.filters{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.chip-btn{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);color:var(--muted);padding:5px 13px;border-radius:20px;font-size:12px;transition:all .2s}
+.chip-btn.active{background:var(--accent);color:#021014;border-color:var(--accent);font-weight:600}
+.chip-btn:hover:not(.active){border-color:rgba(0,230,216,0.2);color:var(--text)}
 
-/* chip filters */
-.chip-filters { display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
-.chip-btn-g { background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); color:var(--muted); padding:5px 14px; border-radius:20px; font-size:12px; cursor:pointer; transition:all .2s; font-family:var(--mono); letter-spacing:0.06em; }
-.chip-btn-g.active { background:var(--accent); color:#021014; border-color:var(--accent); font-weight:700; }
-.chip-btn-g.region-selected:not(.active) { border-color:rgba(0,230,216,0.45); color:var(--text); background:rgba(0,230,216,0.05); }
-.chip-btn-g:hover:not(.active) { border-color:rgba(0,230,216,0.25); color:var(--text); }
+/* feed */
+.feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 
-/* media cards (gap.html style) */
-.media-feed { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px; }
-.media-card-g { display:flex; flex-direction:column; padding:12px; border:1px solid rgba(255,255,255,0.04); border-radius:10px; background:var(--card); transition:border-color .2s,background .2s; cursor:pointer; }
-.media-card-g:hover { background:rgba(14,17,20,0.9); border-color:rgba(0,230,216,0.15); }
-.card-thumb-g { width:100%; aspect-ratio:16/9; border-radius:7px; overflow:hidden; background:#0b0e12; position:relative; margin-bottom:10px; }
-.card-thumb-g img { width:100%; height:100%; object-fit:cover; display:block; }
-.card-thumb-empty-g { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--muted-dim); font-size:10px; text-transform:uppercase; letter-spacing:0.1em; text-align:center; padding:12px; }
-.thumb-overlay-g { position:absolute; inset:0; background:rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; }
-.card-thumb-g:hover .thumb-overlay-g { opacity:1; }
-.play-icon-g { color:white; font-size:22px; }
-.card-title-g { font-weight:600; font-size:13px; line-height:1.4; margin-bottom:7px; color:var(--text); font-family:var(--sans); }
-.card-chips-g { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:7px; }
-.chip-g { background:rgba(255,255,255,0.04); padding:2px 8px; border-radius:10px; font-size:10px; color:var(--muted); font-family:var(--mono); }
-.chip-g.alpha { background:var(--accent); color:#021014; font-weight:700; }
-.chip-g.patent { background:rgba(124,58,237,0.25); color:#b89fff; }
-.chip-g.asia { background:rgba(0,230,216,0.08); color:var(--accent); }
-.chip-g.europe { background:rgba(255,110,199,0.08); color:#FF6EC7; }
-.chip-g.americas { background:rgba(124,58,237,0.08); color:#b89fff; }
-.chip-g.middle-east { background:rgba(255,200,50,0.08); color:#ffc832; }
-.card-desc-g { color:var(--muted); font-size:11px; line-height:1.5; margin-bottom:8px; font-family:var(--sans); }
-.card-actions-g { display:flex; gap:5px; }
-.card-actions-g button { flex:1; padding:5px 0; border-radius:5px; border:0; background:#0b0e12; color:var(--muted); font-size:11px; cursor:pointer; transition:background .2s,color .2s; font-family:var(--mono); letter-spacing:0.06em; }
-.card-actions-g button:hover { background:var(--accent); color:#021014; }
+/* card */
+.media-card{display:flex;flex-direction:column;padding:12px;border:1px solid transparent;border-radius:10px;background:var(--card);transition:border-color .2s,background .2s;cursor:pointer}
+.media-card:hover{background:rgba(14,17,20,0.9);border-color:rgba(0,230,216,0.12)}
+.card-thumb{width:100%;aspect-ratio:16/9;border-radius:7px;overflow:hidden;background:#0b0e12;position:relative;margin-bottom:10px}
+.card-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s}
+.card-thumb:hover .thumb-overlay{opacity:1}
+.play-icon{color:white;font-size:22px}
+.card-meta{}
+.card-title{font-weight:600;font-size:13px;line-height:1.4;margin-bottom:7px}
+.card-chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+.chip{background:rgba(255,255,255,0.04);padding:2px 8px;border-radius:10px;font-size:10px;color:var(--muted)}
+.chip.alpha{background:var(--accent);color:#021014;font-weight:700}
+.chip.patent{background:rgba(124,58,237,0.25);color:#b89fff}
+.card-desc{color:var(--muted);font-size:11px;line-height:1.5;margin-bottom:8px}
+.card-actions{display:flex;gap:5px}
+.card-actions button{flex:1;padding:5px 0;border-radius:5px;border:0;background:#0b0e12;color:var(--muted);font-size:11px;transition:background .2s,color .2s}
+.card-actions button:hover{background:var(--accent);color:#021014}
 
-/* right workbench calc */
-.wb-calc { display:flex; flex-direction:column; gap:8px; }
-.wb-calc label { display:flex; flex-direction:column; gap:3px; font-size:11px; color:var(--muted); font-family:var(--mono); }
-.wb-calc input { background:rgba(0,0,0,0.35); border:1px solid rgba(0,230,216,0.1); padding:7px 10px; border-radius:6px; color:var(--text); font-size:12px; font-family:var(--sans); outline:none; }
-.wb-calc input:focus { border-color:rgba(0,230,216,0.3); }
-.wb-calc-btn { background:var(--accent); border:none; color:#021014; padding:9px; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer; transition:opacity .2s; font-family:var(--mono); letter-spacing:0.08em; }
-.wb-calc-btn:hover { opacity:.85; }
-.wb-calc-result { background:rgba(0,0,0,0.35); padding:10px; border-radius:6px; font-size:11px; line-height:1.8; margin-top:2px; min-height:40px; font-family:var(--mono); color:var(--accent); }
-
-/* signal insight panel */
-.signal-insight-wrap { display:flex; flex-direction:column; gap:8px; }
-.insight-placeholder { font-size:11px; color:var(--muted); font-family:var(--mono); padding:10px; text-align:center; border:1px dashed rgba(0,230,216,0.15); border-radius:6px; }
-.insight-row { display:flex; align-items:flex-start; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
-.insight-row:last-child { border-bottom:none; }
-.insight-icon { font-size:15px; width:20px; text-align:center; flex-shrink:0; margin-top:1px; }
-.insight-body { flex:1; min-width:0; }
-.insight-label { font-size:10px; color:var(--muted); font-family:var(--mono); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:3px; }
-.insight-val { font-size:12px; color:var(--text); line-height:1.5; }
-.insight-thesis { color:rgba(0,230,216,0.85); font-style:italic; }
-.insight-gauge-wrap { display:flex; flex-direction:column; gap:4px; }
-.insight-gauge-track { height:6px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
-.insight-gauge-fill { height:100%; background:linear-gradient(90deg,#00e6d8,#ff6b6b); border-radius:3px; transition:width .5s ease; }
-.insight-diff-num { font-size:11px; color:var(--text); font-family:var(--mono); }
-/* region highlight on signal cards */
-.signal-card.region-highlight,
-.media-card-g.region-highlight { border-color: var(--accent); background: rgba(0,230,216,0.05); }
-.signal-card.region-dim,
-.media-card-g.region-dim { opacity:0.35; }
-/* region zone active glow override */
-.region-zone.zone-active .zone-fill { animation:zone-active-pulse 1.8s ease-in-out infinite; filter:drop-shadow(0 0 12px rgba(0,230,216,0.9)); }
-.region-zone.zone-active .zone-border { stroke:var(--accent); stroke-width:3; opacity:1; }
-.wb-console { max-height:100px; overflow-y:auto; background:#05080a; padding:10px; border-radius:6px; font-size:11px; line-height:1.6; font-family:var(--mono); color:var(--accent); }
+/* right workbench */
+.calc{display:flex;flex-direction:column;gap:8px}
+.calc label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted)}
+.calc input{background:rgba(0,0,0,0.35);border:1px solid rgba(0,230,216,0.1);padding:7px 10px;border-radius:6px;color:var(--text);font-size:12px;font-family:var(--sans);outline:none}
+.calc input:focus{border-color:rgba(0,230,216,0.3)}
+.calc-btn{background:var(--accent);border:none;color:#021014;padding:9px;border-radius:6px;font-weight:600;font-size:12px;transition:opacity .2s}
+.calc-btn:hover{opacity:.85}
+.calc-result{background:rgba(0,0,0,0.35);padding:10px;border-radius:6px;font-size:11px;line-height:1.7;margin-top:2px;min-height:40px}
+.console-log{max-height:110px;overflow-y:auto;background:#05080a;padding:10px;border-radius:6px;font-size:11px;line-height:1.6}
 
 /* queue */
-.wb-queue { max-height:140px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
-.queue-row-g { padding:7px 10px; background:rgba(255,255,255,0.02); border-radius:6px; font-size:11px; cursor:pointer; border:1px solid transparent; transition:border-color .2s; font-family:var(--mono); color:var(--muted); }
-.queue-row-g:hover { border-color:rgba(0,230,216,0.15); color:var(--text); }
-.queue-empty-g { color:var(--muted-dim); font-size:11px; padding:8px 0; font-family:var(--mono); }
+.queue{max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px}
+.queue-row{padding:7px 10px;background:rgba(255,255,255,0.02);border-radius:6px;font-size:11px;cursor:pointer;border:1px solid transparent;transition:border-color .2s}
+.queue-row:hover{border-color:rgba(0,230,216,0.15)}
+.queue-empty{color:var(--muted-dim);font-size:11px;padding:8px 0}
 
-/* map floating pane */
-.map-float { position:fixed; right:20px; bottom:80px; width:260px; padding:8px; overflow:hidden; z-index:30; transition:height 0.3s ease; height:165px; }
-  .map-float.collapsed { height:28px; }
-  .map-float-header { font-size:10px; color:var(--muted); margin-bottom:3px; text-transform:uppercase; letter-spacing:1px; font-family:var(--mono); cursor:pointer; display:flex; align-items:center; justify-content:space-between; user-select:none; }
-  .map-float-header:hover { color:var(--accent); }
+/* map panel */
+.map-panel{position:fixed;right:20px;bottom:100px;width:280px;height:175px;padding:8px;overflow:hidden;z-index:30}
+.map-header{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:1px}
+#worldMap{width:100%;height:148px}
 
+/* fab */
+.fab{position:fixed;right:24px;bottom:26px;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(0,230,216,0.25);background:linear-gradient(135deg,var(--accent),var(--accent3));color:#021014;cursor:pointer;font-weight:700;box-shadow:0 4px 20px rgba(0,230,216,0.25);z-index:50;transition:transform .2s,box-shadow .2s}
+.fab:hover{transform:scale(1.07);box-shadow:0 6px 30px rgba(0,230,216,0.4)}
 
+/* footer */
+.footer{position:fixed;left:16px;right:16px;bottom:10px;height:44px;display:flex;align-items:center;gap:12px;padding:6px 14px;z-index:40}
+#playback{font-size:11px;color:var(--muted);min-width:220px;font-family:var(--mono)}
+.progress-wrap{flex:1;height:5px;background:#0b0e12;border-radius:5px;overflow:hidden;cursor:pointer}
+#progressBar{width:0%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:5px;transition:width .4s}
 
-/* pulse for map markers */
-/* region zone base */
-@keyframes zone-breathe {
-  0%,100% { opacity:.18; }
-  50%      { opacity:.32; }
-}
-@keyframes zone-active-pulse {
-  0%,100% { opacity:.72; }
-  50%      { opacity:1; }
-}
-.zone-fill {
-  fill: var(--accent);
-  opacity: 0;
-  animation: none;
-}
-.zone-border {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 1.5;
-  opacity: 0;
-  animation: none;
-}
-.region-zone.zone-active .zone-fill {
-  fill: var(--accent);
-  opacity: .72;
-  animation: zone-active-pulse 1.8s ease-in-out infinite;
-}
-.region-zone.zone-active .zone-border {
-  stroke: var(--accent);
-  stroke-width: 2.5;
-  opacity: 1;
-  animation: zone-active-pulse 1.8s ease-in-out infinite;
-}
-.region-zone.zone-dim .zone-fill  { opacity: .07; animation: none; }
-.region-zone.zone-dim .zone-border { opacity: .14; animation: none; }
+/* no-content */
+.empty{color:var(--muted-dim);font-size:13px;padding:40px 0;text-align:center;grid-column:1/-1}
+
+/* pulse animation for map markers */
+@keyframes pulse{0%{r:4;opacity:.9}70%{r:10;opacity:0}100%{r:12;opacity:0}}
+.pulse-ring{animation:pulse 2.4s infinite}
 
 /* modal */
-.modal-bg { position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:80; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s; }
-.modal-bg.open { opacity:1; pointer-events:auto; }
-.modal-box { background:#0d1117; border:1px solid rgba(0,230,216,0.15); border-radius:14px; padding:24px; width:420px; max-width:94vw; }
-.modal-box h2 { font-size:16px; margin-bottom:14px; color:var(--accent); font-family:var(--sans); }
-.modal-box p { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:8px; font-family:var(--sans); }
-.modal-close-btn { margin-top:16px; background:var(--accent); border:none; color:#021014; padding:8px 20px; border-radius:7px; font-weight:600; cursor:pointer; font-family:var(--mono); }
-
-/* stat modules for existing triage stats */
-.stats-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:rgba(255,255,255,0.04); border-radius:8px; overflow:hidden; margin-bottom:16px; }
-.stat-module { background:var(--card); padding:14px 16px; }
-.stat-module-label { font-size:9px; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); margin-bottom:6px; font-family:var(--mono); }
-.stat-val { font-size:28px; font-weight:800; color:var(--accent); letter-spacing:-0.04em; line-height:1; font-family:var(--mono); }
-.stat-sub { font-size:9px; color:var(--muted-dim); margin-top:4px; letter-spacing:0.08em; text-transform:uppercase; font-family:var(--mono); }
-
-/* empty state */
-.empty-g { color:var(--muted-dim); font-size:13px; padding:40px 0; text-align:center; grid-column:1/-1; font-family:var(--mono); }
-
-/* ingest log */
-#ingestLog { max-height:52px; overflow:hidden; }
-
-body { padding-bottom: 0; }
-
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:80;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-bg.open{opacity:1;pointer-events:auto}
+.modal{background:#0d1117;border:1px solid rgba(0,230,216,0.15);border-radius:14px;padding:24px;width:420px;max-width:94vw}
+.modal h2{font-size:16px;margin-bottom:14px;color:var(--accent)}
+.modal p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:8px}
+.modal-close{margin-top:16px;background:var(--accent);border:none;color:#021014;padding:8px 20px;border-radius:7px;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="app">
 
-<!-- TOPBAR -->
-<header class="topbar glass">
-  <div class="topbar-logo">
-    <img src="./logo.png" alt="GAP" style="height:40px;width:auto;display:block;" />
-  </div>  <div class="topbar-title">Global Alpha Pipeline</div>
+  <header class="topbar glass">
+    <div class="logo">GAP</div>
+    <input id="search" class="search" placeholder="Search sources, creators, patents…"/>
+    <div class="controls">
+      <select id="sourceFilter">
+        <option value="all">All Sources</option>
+        <option value="tradeshows">Trade Shows</option>
+        <option value="patents">Patents</option>
+        <option value="lab">Lab Footage</option>
+      </select>
+      <select id="regionFilter">
+        <option value="all">All Regions</option>
+        <option value="Asia">Asia</option>
+        <option value="Europe">Europe</option>
+        <option value="Americas">Americas</option>
+      </select>
+      <button class="btn-ghost" id="refreshBtn">⟳ Refresh</button>
+    </div>
+  </header>
 
-  <div class="topbar-controls">
-    <button class="chip-btn-g" style="margin-left:auto;border-radius:20px;" onclick="refreshSignalFeed();">Refresh</button>
-
-  </div> </div>
-</header>
-
-<!-- ── TRIAGE VIEW ── -->
-
-
-  <!-- HERO -->
   <section class="hero glass">
-  <!-- COL 1: Portrait preview -->
-  <div class="hero-left">
-    <div class="hero-media" id="heroMedia">
-      <div class="hero-placeholder" id="heroPlaceholder">Select to preview</div>
-      <div class="alpha-badge" id="heroBadge" style="display:none"></div>
-    </div>
-    
-  </div>
-  <!-- COL 2: Ingest + Export + Saves + Social Extract -->
-  <div class="hero-col2">
-    <div class="wb-card">
-      <div class="wb-title">Live Feed</div>
-      <pre id="ingestLog" class="mono-log">scanning sources…</pre>
-    </div>
-    <div class="wb-card">
-      <div class="wb-title">Export</div>
-      <div class="wb-templates">
-        <button onclick="exportTemplate('TikTok')">TikTok</button>
-        <button onclick="exportTemplate('Reels')">Reels</button>
-        <button onclick="exportTemplate('Shorts')">Shorts</button>
+    <div class="hero-left">
+      <div class="hero-media" id="heroMedia">
+        <div class="hero-placeholder" id="heroPlaceholder">Select a clip to preview</div>
+        <div class="alpha-badge" id="heroBadge" style="display:none"></div>
+      </div>
+      <div class="hero-meta">
+        <h1 id="heroTitle">Global Alpha Pipeline</h1>
+        <p id="heroInsight">Surface emerging tech from trade shows, patents, and lab footage worldwide. Score, save, and export in seconds.</p>
       </div>
     </div>
-    <div class="wb-card">
-<div class="wb-title">Favorites <span class="wb-badge" id="saveCount">0</span></div>
-      <div id="recentSaves" class="thumb-grid"></div>
-    </div>
-    <div class="wb-card" id="hero-social-panel">
-      <div class="social-extract">
-        <div class="social-extract-header" id="hero-social-header">Select to summarize</div>
-        <div id="hero-social-body" style="display:none">
-          <div class="social-format-tabs">
-            <button class="fmt-tab active" data-fmt="tiktok" onclick="heroFmtTab(this,'tiktok')">TikTok 9:16</button>
-            <button class="fmt-tab" data-fmt="reels" onclick="heroFmtTab(this,'reels')">Reels</button>
-            <button class="fmt-tab" data-fmt="shorts" onclick="heroFmtTab(this,'shorts')">Shorts</button>
-          </div>
-          <div class="social-caption-box">
-            <div class="social-caption-label">Hook</div>
-            <div class="social-caption-text" id="hero-social-hook"></div>
-          </div>
-          <div class="social-caption-box">
-            <div class="social-caption-label">Caption + Tags</div>
-            <div class="social-caption-text" id="hero-social-caption"></div>
-          </div>
-          <div class="social-meta" id="hero-social-meta"></div>
-          <button class="social-copy-btn" id="hero-social-copy-btn">Copy Caption</button>
+    <aside class="hero-workbench">
+      <div class="wb-card">
+        <div class="wb-title">Live Ingest</div>
+        <pre id="ingestLog" class="mono">idle…</pre>
+      </div>
+      <div class="wb-card">
+        <div class="wb-title">Export</div>
+        <div class="templates">
+          <button onclick="exportTemplate('TikTok')">TikTok</button>
+          <button onclick="exportTemplate('Reels')">Reels</button>
+          <button onclick="exportTemplate('Shorts')">Shorts</button>
         </div>
       </div>
-    </div>
-  </div>
-  <!-- COL 3: Queue + Financial Calc + Console -->
-  <div class="hero-col3">
-    <div class="wb-card">
-      <div class="wb-title">Queue <span class="wb-badge" id="queueCount" style="display:none">0</span></div>
-      <div id="queueList" class="wb-queue"><div class="queue-empty-g">No items in queue</div></div>
-    </div>
-    <div class="wb-card">
-      <div class="wb-title">Analysis</div>
-      <div id="signal-insight-panel" class="signal-insight-wrap">
-        <div class="insight-placeholder">Select for analysis</div>
+      <div class="wb-card">
+        <div class="wb-title">Recent Saves <span id="saveCount" class="badge">0</span></div>
+        <div id="recentSaves" class="thumb-grid"></div>
       </div>
+    </aside>
+  </section>
+
+  <main class="main">
+    <div class="left-col">
+      <div class="filters">
+        <button class="chip-btn active" data-filter="all">All</button>
+        <button class="chip-btn" data-filter="alpha">Alpha 75+</button>
+        <button class="chip-btn" data-filter="tradeshows">Trade Shows</button>
+        <button class="chip-btn" data-filter="patents">Patents</button>
+        <button class="chip-btn" data-filter="lab">Lab</button>
+      </div>
+      <section id="feed" class="feed"></section>
     </div>
-    
-  </div>
-</section>
-<!-- MAIN FEED + RIGHT WORKBENCH -->
-<div class="gap-main">
-  <div class="gap-left-col">
-    <!-- CHIP FILTERS -->
-    <div class="chip-filters">
-      <button class="chip-btn-g active" data-filter="all" onclick="setGapFilter(this,'all')">All</button>
-      <button class="chip-btn-g" data-filter="favorites" onclick="setGapFilter(this,'favorites')">★ Favorites</button>
-      <button class="chip-btn-g" data-filter="tech" onclick="setGapFilter(this,'tech')">Tech</button>
-      <button class="chip-btn-g" data-filter="business" onclick="setGapFilter(this,'business')">Business</button>
-      <button class="chip-btn-g" data-filter="concepts" onclick="setGapFilter(this,'concepts')">Concepts</button>
-      <button class="chip-btn-g" data-filter="asia" onclick="setGapFilter(this,'asia')">Asia</button>
-      <button class="chip-btn-g" data-filter="europe" onclick="setGapFilter(this,'europe')">Europe</button>
-      <button class="chip-btn-g" data-filter="middle_east" onclick="setGapFilter(this,'middle_east')">Middle East</button>
-      <button class="chip-btn-g" data-filter="americas" onclick="setGapFilter(this,'americas')">Americas</button>
-      <button class="chip-btn-g" style="margin-left:auto;border-radius:20px;" onclick="refreshSignalFeed();">Refresh</button>
-    </div>
-    <div class="cards-grid" id="cards-grid"></div>
-  </div>
-</div>
-</main><!-- FLOATING MAP -->
-<div class="map-float glass" id="mapFloatPanel">
-  <div class="map-float-header" onclick="toggleFloatMap()">
-    <span>Global Coverage</span><span id="mapFloatToggle" style="font-size:9px;opacity:0.6;">▼</span>
-  </div>
-  <div id="mapFloatBody" style="position:relative;width:100%;height:148px;border-radius:6px;overflow:hidden;">
-    <img src="./world.svg" alt="" style="width:100%;height:100%;object-fit:cover;display:block;opacity:0.75;" />
-    <svg id="worldMapFloat" viewBox="0 0 2000 857" style="position:absolute;inset:0;width:100%;height:100%;" xmlns="http://www.w3.org/2000/svg">
-      <g id="floatMarkers"></g>
+
+    <aside class="right-col glass">
+      <div class="wb-section">
+        <div class="wb-title">Queue <span id="queueCount" class="badge" style="display:none">0</span></div>
+        <div id="queue" class="queue"><div class="queue-empty">No clips queued</div></div>
+      </div>
+      <div class="wb-section">
+        <div class="wb-title">Financial Snapshot</div>
+        <div class="calc">
+          <label>Startup Cost ($)<input id="cost" type="number" placeholder="50000"/></label>
+          <label>Growth Rate (%/yr)<input id="growth" type="number" placeholder="25"/></label>
+          <label>Revenue / Mo ($)<input id="revenue" type="number" placeholder="9900"/></label>
+          <label>TAM ($)<input id="tamsize" type="number" placeholder="500000000"/></label>
+          <button class="calc-btn" id="calcBtn">Generate Insight</button>
+          <pre id="calcOut" class="mono calc-result">—</pre>
+        </div>
+      </div>
+      <div class="wb-section">
+        <div class="wb-title">Console</div>
+        <pre id="consoleLog" class="mono console-log">Ready.</pre>
+      </div>
+    </aside>
+  </main>
+
+  <div class="map-panel glass">
+    <div class="map-header">Global Coverage</div>
+    <svg id="worldMap" viewBox="0 0 800 400">
+      <g id="regions">
+        <!-- simplified continent blobs -->
+        <path d="M60 80 L160 60 L220 80 L240 130 L210 160 L150 150 L80 130 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="110" y="115" fill="#5a6a72" font-size="11" font-family="Inter">N. America</text>
+        <path d="M280 100 L340 90 L370 110 L360 140 L320 150 L285 130 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="295" y="125" fill="#5a6a72" font-size="11" font-family="Inter">Europe</text>
+        <path d="M410 70 L560 60 L600 100 L580 160 L500 180 L430 150 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="480" y="115" fill="#5a6a72" font-size="11" font-family="Inter">Asia</text>
+        <path d="M310 180 L370 170 L380 240 L340 260 L295 230 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="315" y="215" fill="#5a6a72" font-size="9" font-family="Inter">Africa</text>
+        <path d="M120 220 L170 200 L185 280 L150 310 L105 280 Z" fill="rgba(255,255,255,0.02)" stroke="rgba(0,230,216,0.06)" stroke-width="1"/>
+        <text x="118" y="260" fill="#5a6a72" font-size="9" font-family="Inter">S. Am.</text>
+      </g>
+      <g id="markers"></g>
     </svg>
   </div>
+
+  <button class="fab" id="captureFab" title="Capture new clip">+</button>
+
+  <footer class="footer glass">
+    <div id="playback">Selected: —</div>
+    <div class="progress-wrap">
+      <div id="progressBar"></div>
+    </div>
+  </footer>
 </div>
-<!-- MODAL -->
+
+<!-- modal -->
 <div class="modal-bg" id="modalBg">
-  <div class="modal-box">
-    <h2 id="modalTitle">Signal Detail</h2>
+  <div class="modal">
+    <h2 id="modalTitle">Clip Detail</h2>
     <p id="modalBody"></p>
-    <button class="modal-close-btn" onclick="closeModal()">Close</button>
+    <button class="modal-close" onclick="closeModal()">Close</button>
   </div>
 </div>
 
-<!-- PIPELINE MODAL -->
-<div class="modal-bg" id="pipelineModalBg">
-  <div class="modal-box" style="width:700px;max-width:96vw;max-height:85vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <h2 style="margin:0;">&#9881; Pipeline Config</h2>
-      <button class="modal-close-btn" onclick="closePipelineModal()" style="margin:0;">&#10005;</button>
-    </div>
-    <div id="pipelineModalContent"></div>
-  </div>
-</div>
-
-<!-- SAVE MODAL -->
-<div class="modal-bg" id="saveModalBg">
-  <div class="modal-box" style="width:520px;max-width:96vw;max-height:90vh;overflow-y:auto;">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <h2 id="saveModalTitle" style="margin:0;font-size:13px;"></h2>
-      <button class="modal-close-btn" onclick="closeSaveModal()" style="margin:0;">&#10005;</button>
-    </div>
-    <div id="saveModalBody"></div>
-  </div>
-</div></div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-</div>
 <script>
-var THUMB_MAP = {
-  'WIPO': 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=60',
-  'TRADE_SHOW': 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60',
-  'KICKSTARTER': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=60',
-  'YOUTUBE': 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&q=60',
-  'RSS': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=60',
-  'LEAP': 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60',
-  'INDIEGOGO': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=60',
-  'BEHANCE': 'https://images.unsplash.com/photo-1572044162384-3534e587c4f1?w=400&q=60',
-  'DRIBBBLE': 'https://images.unsplash.com/photo-1572044162384-3534e587c4f1?w=400&q=60',
-  'NAMA': 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60',
-  'RETAILTECH': 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60',
-  'DEFAULT': 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&q=60'
-};
-var gapQueue = [];
-window._gapFilter = 'all';
-
-    // Favorites storage
-const FAVORITES_KEY = 'gap-favorites-v1';
-function loadFavorites() { try { return JSON.parse(localStorage.getItem(FAVORITES_KEY)||'[]'); } catch(e) { return []; } }
-function saveFavorites() { try { localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites)); } catch(e) {} }
-var favorites = loadFavorites();
-
-
-let signals = [];
-
-signals = [];
-let activeSignalId = null;
-
-let keptSignals = signals.map(s => ({ ...s, status: 'Kept' }));
-const signalDates = { 1:'16.04.26',2:'16.04.26',3:'15.04.26',4:'15.04.26',5:'14.04.26',6:'14.04.26',7:'13.04.26',8:'13.04.26',9:'12.04.26',10:'12.04.26',11:'11.04.26',12:'11.04.26' };
-const nodeLookup = { 'Tokyo, Japan':'TOKYO_JPN','Riyadh, Saudi Arabia':'RIYADH_SAU','Berlin, Germany':'BERLIN_DEU','Singapore':'SINGAPORE_SGP','Los Angeles, USA':'LOSANGELES_USA' };
-const coordinateLookup = { 'Tokyo, Japan':'139.6917E // 35.6895N','Riyadh, Saudi Arabia':'46.6753E // 24.7136N','Berlin, Germany':'13.4050E // 52.5200N','Singapore':'103.8198E // 1.3521N','Los Angeles, USA':'118.2437W // 34.0522N' };
-const STORAGE_KEY = 'gap-ui-state-v1';
-const allowedViews = new Set(['triage','map','hub','pipeline']);
-const allowedFilters = new Set(['all','tech','biz','rd','asia','europe','me','americas']);
-const allowedRegions = new Set(['asia','europe','me','americas']);
-const defaultUiState = { activeView:'triage', triageFilter:'all', mapRegion:'asia', hubSignalId:null };
-let selectedTriageId = null;
-let uiState = loadUiState();
-const DEFAULT_FEED_URL = './data.json';
-
-function normalizeStream(value) {
-  const v = String(value || '').trim().toLowerCase();
-  if (['tech', 'a', 'hardware', 'technology'].includes(v)) return 'tech';
-  if (['business', 'biz', 'b', 'ideas', 'idea', 'model', 'models'].includes(v)) return 'biz';
-  return 'rd';
-}
-
-function normalizeOrigin(value) {
-  const v = String(value || '').trim().toLowerCase();
-  if (!v) return 'asia';
-  if (v.includes('middle') || v === 'me' || v.includes('uae') || v.includes('saudi') || v.includes('gulf')) return 'me';
-  if (v.includes('asia') || v.includes('japan') || v.includes('singapore') || v.includes('turkey')) return 'asia';
-  if (v.includes('europe') || v.includes('france') || v.includes('switzerland') || v.includes('germany')) return 'europe';
-  if (v.includes('america') || v.includes('usa') || v.includes('united states') || v.includes('canada')) return 'americas';
-  return v.replace(/[^a-z]/g, '') || 'asia';
-}
-
-function regionFilterKey(value) {
-  const origin = normalizeOrigin(value);
-  return origin === 'me' ? 'middle_east' : origin;
-}
-
-function normalizeSourceType(value) {
-  const v = String(value || '').trim().toLowerCase();
-  if (v.includes('patent')) return 'PATENT';
-  if (v.includes('trade') || v.includes('expo') || v.includes('show') || v.includes('conference')) return 'TRADE_SHOW';
-  if (v.includes('kickstarter') || v.includes('crowd') || v.includes('indiegogo')) return 'CROWDFUNDED';
-  if (v.includes('news') || v.includes('press') || v.includes('rss')) return 'NEWS_SIGNAL';
-  if (v.includes('concept') || v.includes('r&d') || v.includes('research')) return 'R&D_CONCEPT';
-  return formatCode(value || 'SOURCE');
-}
-
-function sourceTypeLabel(value) {
-  return normalizeSourceType(value).replace(/_/g, ' ');
-}
-
-function prettyOriginLabel(origin, raw) {
-  if (raw && String(raw).trim()) return String(raw).trim();
-  const map = {
-    asia: 'Asia',
-    europe: 'Europe',
-    me: 'Middle East',
-    americas: 'Americas'
-  };
-  return map[normalizeOrigin(origin)] || 'Global';
-}
-
-function formatIncomingDate(value, fallbackId) {
-  if (!value) return signalDates[fallbackId] || '16.04.26';
-  const raw = String(value).trim();
-  if (/^\d{2}\.\d{2}\.\d{2}$/.test(raw)) return raw;
-  const parsed = new Date(raw);
-  if (Number.isNaN(parsed.getTime())) return raw.slice(0, 8);
-  const dd = String(parsed.getUTCDate()).padStart(2, '0');
-  const mm = String(parsed.getUTCMonth() + 1).padStart(2, '0');
-  const yy = String(parsed.getUTCFullYear()).slice(-2);
-  return dd + '.' + mm + '.' + yy;
-}
-
-function looksLikeYouTube(url) {
-  return /youtube\.com|youtu\.be/.test(String(url || ''));
-}
-
-function toYouTubeEmbed(url) {
-  const raw = String(url || '');
-  if (!raw) return '';
-  if (raw.includes('/embed/')) return raw;
-  const watchMatch = raw.match(/[?&]v=([^&]+)/);
-  if (watchMatch) return 'https://www.youtube.com/embed/' + watchMatch[1];
-  const shortMatch = raw.match(/youtu\.be\/([^?&/]+)/);
-  if (shortMatch) return 'https://www.youtube.com/embed/' + shortMatch[1];
-  return raw;
-}
-
-function toYouTubeWatch(url) {
-  const embed = toYouTubeEmbed(url);
-  const match = embed.match(/\/embed\/([^?&/]+)/);
-  return match ? 'https://www.youtube.com/watch?v=' + match[1] : String(url || '');
-}
-
-function escapeHtml(text) {
-  return String(text || '').replace(/[&<>"']/g, function(ch) {
-    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
-  });
-}
-
-function estimateMetrics(stream, sourceType) {
-  const s = normalizeStream(stream);
-  const t = normalizeSourceType(sourceType);
-  if (s === 'tech') {
-    return t === 'PATENT'
-      ? { setupCost: 28000, unitPrice: 11, dailyVolume: 85 }
-      : { setupCost: 22000, unitPrice: 10, dailyVolume: 70 };
-  }
-  if (s === 'biz') {
-    return t === 'CROWDFUNDED'
-      ? { setupCost: 9000, unitPrice: 24, dailyVolume: 22 }
-      : { setupCost: 12000, unitPrice: 18, dailyVolume: 28 };
-  }
-  return { setupCost: 16000, unitPrice: 8, dailyVolume: 45 };
-}
-
-function normalizeSignal(raw, index) {
-  const sourceUrl = raw.url || raw.sourceUrl || raw.link || raw.pageUrl || '';
-  const stream = normalizeStream(raw.stream || raw.category);
-  const sourceType = normalizeSourceType(raw.sourceType || raw.category || raw.source);
-  const origin = normalizeOrigin(raw.origin || raw.region || raw.country || raw.originLabel);
-  const fallbackMetrics = estimateMetrics(stream, sourceType);
-  const mediaUrl = raw.mediaUrl || raw.videoUrl || raw.image || raw.imageUrl || raw.thumbnail || raw.thumbUrl || '';
-  const thumbUrl = raw.thumbUrl || raw.thumbnail || raw.image || raw.imageUrl || '';
-  const mediaType = String(raw.mediaType || '').toLowerCase() || (looksLikeYouTube(mediaUrl) ? 'video' : /\.(mp4|mov|webm)(\?|$)/i.test(mediaUrl) ? 'video' : 'image');
-  return {
-    id: Number(raw.id) || index + 1,
-    stream,
-    origin,
-    originLabel: prettyOriginLabel(origin, raw.originLabel || raw.region || raw.country),
-    title: raw.title || raw.name || 'Untitled Signal',
-    desc: raw.desc || raw.description || raw.snippet || '',
-    source: raw.source || sourceTypeLabel(sourceType),
-    sourceType,
-    setupCost: Number(raw.setupCost) || fallbackMetrics.setupCost,
-    unitPrice: Number(raw.unitPrice) || fallbackMetrics.unitPrice,
-    dailyVolume: Number(raw.dailyVolume) || fallbackMetrics.dailyVolume,
-    tradeShow: raw.tradeShow || raw.event || '',
-    date: formatIncomingDate(raw.date || raw.pubDate || raw.priority_date || raw.publication_date, Number(raw.id) || index + 1),
-    mediaType,
-    mediaUrl: mediaUrl,
-    thumbUrl: thumbUrl && thumbUrl.includes('undefined') ? '' : thumbUrl,
-    mediaOrigin: raw.mediaOrigin || formatCode(origin),
-    url: sourceUrl || ''
-  };
-}
-
-function scoreSignalPriority(signal) {
-  const regionScore = { asia: 40, europe: 35, me: 30, americas: 10 };
-  const sourceScore = { PATENT: 12, TRADE_SHOW: 10, CROWDFUNDED: 8, NEWS_SIGNAL: 6, 'R&D_CONCEPT': 7 };
-  const freshness = /^\d{2}\.\d{2}\.\d{2}$/.test(signal.date || '') ? Number((signal.date || '').slice(0, 2)) : 0;
-  return (regionScore[normalizeOrigin(signal.origin)] || 5) + (sourceScore[normalizeSourceType(signal.sourceType)] || 0) + freshness;
-}
-
-function normalizeIncomingFeed(payload) {
-  const rawSignals = Array.isArray(payload)
-    ? payload
-    : Array.isArray(payload && payload.signals)
-      ? payload.signals
-      : Array.isArray(payload && payload.array)
-        ? payload.array
-        : Array.isArray(payload && payload.data)
-          ? payload.data
-          : [];
-  const normalizedSignals = rawSignals
-    .map(function(item, index) { return normalizeSignal(item || {}, index); })
-    .sort(function(a, b) { return scoreSignalPriority(b) - scoreSignalPriority(a); });
-  return {
-    meta: payload && payload.meta ? payload.meta : { last_updated: new Date().toLocaleString() },
-    signals: normalizedSignals
-  };
-}
-
-function getFeedEndpoint() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('feed') || window.GAP_FEED_URL || DEFAULT_FEED_URL;
-}
-
-function copyToClipboardSafe(text, onDone) {
-  navigator.clipboard.writeText(String(text || '')).then(function() {
-    if (typeof onDone === 'function') onDone(true);
-  }).catch(function() {
-    if (typeof onDone === 'function') onDone(false);
-  });
-}
-
-function openSignalSource(id) {
-  const s = signals.find(function(item) { return item.id === id; }) || keptSignals.find(function(item) { return item.id === id; });
-  if (!s) return;
-  const target = s.url || '';
-  if (!target) {
-    showToast('No source link in feed');
-    return;
-  }
-  window.open(target, '_blank', 'noopener');
-  gapLog('Source opened: ' + s.title);
-}
-
-function downloadOrOpenMedia(signal, label) {
-  const titleSlug = (signal.title || 'gap-signal').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-  const platformSlug = String(label || 'export').toLowerCase();
-  const exportAsset = resolveExportAsset(signal, titleSlug, platformSlug);
-  if (!exportAsset || !exportAsset.url) {
-    showToast('No media available');
-    return;
-  }
-  showToast('Preparing download…');
-  fetch(exportAsset.url, { mode: 'cors', cache: 'no-store' })
-    .then(function(response) {
-      if (!response.ok) throw new Error('download failed');
-      return response.blob();
-    })
-    .then(function(blob) {
-      const objectUrl = URL.createObjectURL(blob);
-      triggerFileDownload(objectUrl, exportAsset.filename);
-      setTimeout(function() { URL.revokeObjectURL(objectUrl); }, 2000);
-      showToast(exportAsset.toastLabel + ' downloaded');
-    })
-    .catch(function() {
-      if (exportAsset.fallbackUrl && exportAsset.fallbackUrl !== exportAsset.url) {
-        fetch(exportAsset.fallbackUrl, { mode: 'cors', cache: 'no-store' })
-          .then(function(response) {
-            if (!response.ok) throw new Error('fallback failed');
-            return response.blob();
-          })
-          .then(function(blob) {
-            const objectUrl = URL.createObjectURL(blob);
-            triggerFileDownload(objectUrl, exportAsset.filename);
-            setTimeout(function() { URL.revokeObjectURL(objectUrl); }, 2000);
-            showToast(exportAsset.toastLabel + ' downloaded');
-          })
-          .catch(function() {
-            showToast('Download blocked for this source');
-          });
-        return;
-      }
-      showToast('Download blocked for this source');
-    });
-}
-
-function resolveExportAsset(signal, titleSlug, platformSlug) {
-  const mediaUrl = signal.mediaUrl || '';
-  const thumbUrl = signal.thumbUrl || '';
-  const directVideo = isDirectSourceVideo(mediaUrl);
-  const directImage = isDirectSourceImage(mediaUrl);
-
-  if (directVideo) {
-    return {
-      url: mediaUrl,
-      filename: titleSlug + '-' + platformSlug + guessFileExtension(mediaUrl, '.mp4'),
-      toastLabel: 'Video'
-    };
-  }
-  if (directImage) {
-    return {
-      url: mediaUrl,
-      filename: titleSlug + '-' + platformSlug + guessFileExtension(mediaUrl, '.jpg'),
-      toastLabel: 'Image'
-    };
-  }
-  if (isDirectSourceImage(thumbUrl)) {
-    return {
-      url: thumbUrl,
-      filename: titleSlug + '-' + platformSlug + guessFileExtension(thumbUrl, '.jpg'),
-      toastLabel: 'Image'
-    };
-  }
-  // Fallback: if YouTube embed, try to download the YouTube thumbnail
-  if (isYouTubeHostedUrl(thumbUrl) && thumbUrl) {
-    return {
-      url: thumbUrl,
-      filename: (titleSlug || 'signal') + '-' + (platformSlug || 'export') + '.jpg',
-      toastLabel: 'Thumbnail'
-    };
-  }
-  return null;
-}
-
-function normalizeYouTubeThumbUrl(url) {
-  const raw = String(url || '');
-  const embed = toYouTubeEmbed(raw);
-  const match = embed.match(/\/embed\/([^?&/]+)/);
-  if (!match) return raw;
-  return 'https://i.ytimg.com/vi/' + match[1] + '/hqdefault.jpg';
-}
-
-function isYouTubeHostedUrl(url) {
-  return /(?:youtube\.com|youtu\.be|ytimg\.com|img\.youtube\.com)/i.test(String(url || ''));
-}
-
-function isGenericThumbUrl(url) {
-  const raw = String(url || '');
-  return /images\.unsplash\.com/i.test(raw) || Object.values(THUMB_MAP).includes(raw);
-}
-
-function isDirectSourceVideo(url) {
-  const raw = String(url || '');
-  return !!raw && !isYouTubeHostedUrl(raw) && /\.(mp4|mov|webm|m4v)(\?|$)/i.test(raw);
-}
-
-function isDirectSourceImage(url) {
-  const raw = String(url || '');
-  return !!raw && !isYouTubeHostedUrl(raw) && !isGenericThumbUrl(raw) && /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(raw);
-}
-
-function guessFileExtension(url, fallback) {
-  const clean = String(url || '').split('?')[0];
-  const match = clean.match(/(\.[a-z0-9]{3,5})$/i);
-  return match ? match[1].toLowerCase() : fallback;
-}
-
-function triggerFileDownload(href, filename) {
-  const link = document.createElement('a');
-  link.href = href;
-  link.download = filename;
-  link.rel = 'noopener';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-}
-
-function loadUiState() { try { return { ...defaultUiState, ...JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}') }; } catch(e) { return { ...defaultUiState }; } }
-function saveUiState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(uiState)); } catch(e) {} }
-function normalizeView(v) { return allowedViews.has(v) ? v : defaultUiState.activeView; }
-function normalizeFilter(f) { return allowedFilters.has(f) ? f : defaultUiState.triageFilter; }
-function normalizeRegion(r) { return allowedRegions.has(r) ? r : defaultUiState.mapRegion; }
-function normalizeHubSignalId(id) { return keptSignals.some(s => s.id === id) ? id : null; }
-function monthlyRevEst(s) { return Math.round((Number(s.unitPrice) || 0) * (Number(s.dailyVolume) || 0) * 30); }
-function marketGrowth(s) {
-  const stream = normalizeStream(s.stream);
-  if (stream === 'tech') return '18% CAGR';
-  if (stream === 'biz') return '12% CAGR';
-  return '22% CAGR';
-}
-function parseGrowthPercent(value) {
-  const match = String(value || '').match(/(\d+(?:\.\d+)?)/);
-  return match ? Number(match[1]) : 0;
-}
-function clampScore(value, min, max) {
-  return Math.max(min, Math.min(max, Math.round(value)));
-}
-function getGapMetrics(s) {
-  const stream = normalizeStream(s.stream);
-  const sourceType = normalizeSourceType(s.sourceType);
-  const monthly = monthlyRevEst(s);
-  const setup = Number(s.setupCost) || 0;
-  const growthPct = parseGrowthPercent(marketGrowth(s));
-  const roiRatio = setup > 0 ? monthly / setup : 0;
-  const paybackMonths = monthly > 0 ? setup / monthly : 99;
-
-  let easeOfEntry = stream === 'tech' ? 72 : stream === 'biz' ? 84 : 76;
-  if (setup <= 10000) easeOfEntry += 10;
-  else if (setup <= 20000) easeOfEntry += 6;
-  else if (setup <= 30000) easeOfEntry += 1;
-  else easeOfEntry -= 6;
-  if (sourceType === 'CROWDFUNDED') easeOfEntry += 6;
-  if (sourceType === 'TRADE_SHOW') easeOfEntry += 3;
-  if (sourceType === 'PATENT') easeOfEntry -= 5;
-  if (roiRatio >= 0.8) easeOfEntry += 4;
-  else if (roiRatio >= 0.4) easeOfEntry += 2;
-
-  let longevity = sourceType === 'PATENT' ? 94
-    : sourceType === 'TRADE_SHOW' ? 84
-    : sourceType === 'CROWDFUNDED' ? 76
-    : sourceType === 'NEWS_SIGNAL' ? 72
-    : 80;
-  longevity += Math.round((growthPct - 10) / 2);
-  if (stream === 'tech') longevity += 2;
-  if (stream === 'rd') longevity += 3;
-
-  let viability = paybackMonths <= 3 ? 96
-    : paybackMonths <= 6 ? 90
-    : paybackMonths <= 12 ? 82
-    : paybackMonths <= 18 ? 74
-    : 66;
-  if (monthly >= 20000) viability += 4;
-  else if (monthly >= 10000) viability += 2;
-  else if (monthly < 5000) viability -= 4;
-  if (sourceType === 'CROWDFUNDED') viability += 4;
-  if (sourceType === 'TRADE_SHOW') viability += 2;
-  if (sourceType === 'PATENT') viability += 1;
-
-  easeOfEntry = clampScore(easeOfEntry, 55, 96);
-  longevity = clampScore(longevity, 60, 99);
-  viability = clampScore(viability, 58, 98);
-
-  return {
-    easeOfEntry,
-    longevity,
-    viability,
-    gapScore: clampScore((easeOfEntry + longevity + viability) / 3, 60, 99)
-  };
-}
-function gapThesis(s) {
-  const region = s.originLabel || prettyOriginLabel(s.origin, s.originLabel);
-  const title = String(s.title || 'This GAP item').replace(/^(WIPO Patent|WIPO|Patent|Kickstarter|Indiegogo|LEAP|Behance|Dribbble|NAMA|RetailTech)\s*[:|-]\s*/i, '').trim();
-  const stream = streamLabel(s.stream).toLowerCase();
-  const sourceType = normalizeSourceType(s.sourceType);
-  const benefit = benefitTags(s)[0] || 'scalable execution';
-  let closer = 'It looks built for low-friction rollout and early-mover positioning.';
-  if (sourceType === 'PATENT') closer = 'Its patent-backed angle gives it a more defensible path if adapted well for local demand.';
-  if (sourceType === 'CROWDFUNDED') closer = 'Its early traction suggests clearer demand validation than a typical new concept.';
-  if (sourceType === 'TRADE_SHOW') closer = 'Its trade-show profile suggests market-ready positioning rather than a purely speculative concept.';
-  return 'A ' + stream + ' signal from ' + region + ' centered on ' + title + '. ' + closer;
-}
-function benefitTags(s) {
-  const tags = [];
-  const sourceType = normalizeSourceType(s.sourceType);
-  const stream = normalizeStream(s.stream);
-  if (sourceType === 'PATENT') tags.push('IP-Protected');
-  if (sourceType === 'TRADE_SHOW') tags.push('Market-Validated');
-  if (sourceType === 'CROWDFUNDED') tags.push('Demand-Proven');
-  if (stream === 'tech') tags.push('Automation Play');
-  if (stream === 'biz') tags.push('Scalable Model');
-  tags.push('Low Overhead');
-  return tags.slice(0, 3);
-}
-function streamClass(s) {
-  const stream = normalizeStream(s && s.stream ? s.stream : s);
-  if (stream === 'tech') return 'stream-a';
-  if (stream === 'biz') return 'stream-b';
-  return 'stream-c';
-}
-function streamLabel(s) { return normalizeStream(s)==='tech'?'Tech':normalizeStream(s)==='biz'?'Business':'Concepts'; }
-function streamBreakdown(s) { return normalizeStream(s.stream)==='tech'?'Tech & Hardware':normalizeStream(s.stream)==='biz'?'Business Models':'R&D & Concepts'; }
-function signalDate(s) { return s.date || signalDates[s.id] || '16.04.26'; }
-function srcId(s) { return `GAP_${String(s.id).padStart(3,'0')}`; }
-function regionNode(s) { return nodeLookup[s.originLabel]||formatCode(s.originLabel); }
-function coordinates(s) { return coordinateLookup[s.originLabel]||'000.0000E // 00.0000N'; }
-function formatCode(t) { return String(t).replace(/&/g,'AND').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_+|_+$/g,'').toUpperCase(); }
-function signalHeader(s) { return `${srcId(s)} // ${regionNode(s)} // ${signalDate(s)}`; }
-function originReadout(s) { return `[${coordinates(s)}] // ${regionNode(s)} // ${formatCode(s.tradeShow||s.sourceType)}`; }
-
-function sigId(s) { return `GAP_SIG_${String(s.id).padStart(3,'0')}`; }
-function marketBlock(s) {
-  const monthly = monthlyRevEst(s).toLocaleString();
-  const growth = marketGrowth(s);
-  return `<div class="roi-row"><span class="roi-key">Avg setup</span><span class="roi-val">$${s.setupCost.toLocaleString()}</span></div>
-      <div class="roi-row"><span class="roi-key">Monthly est.</span><span class="roi-val">~$${monthly}</span></div>
-      <div class="roi-row"><span class="roi-key">Market growth</span><span class="roi-val">${growth}</span></div>`;
-}
-function cardMarkup(s, { showActions=false, selectable=false }={}) {
-  const selectedClass = selectable && selectedTriageId===s.id ? ' triage-selected' : '';
-  const idAttr = selectable ? ` id="card-${s.id}"` : '';
-  const clickAttr = selectable ? ` onclick="toggleTriageSelect(${s.id})"` : '';
-  const sourceNode = formatCode(s.tradeShow || normalizeSourceType(s.sourceType));
-  return `<div class="signal-card${selectedClass}" data-origin="${s.origin}"${idAttr}${clickAttr}>
-      <div class="card-header">
-        <div class="card-header-left">
-          <span class="card-id">${sigId(s)}</span>
-          <span class="card-stage-tag${normalizeStream(s.stream)==='tech'?' verified':''}">${normalizeStream(s.stream)==='tech'?'Alpha Verified':'Signal In Progress'}</span>
-          <span class="card-stream ${streamClass(s.stream)}">${streamLabel(s.stream)}</span>
-          <span class="card-type">${formatCode(normalizeSourceType(s.sourceType))}</span>
-        </div>
-        <span class="card-id" style="opacity:0.5">${signalDate(s)}</span>
-      </div>
-      <div class="card-body">
-        <div class="card-origin">Source: ${sourceNode} · ${s.originLabel}</div>
-        <div class="card-summary">${s.title}</div>
-        <div class="card-desc">${s.desc}</div>
-        <div class="roi-module">
-          <div class="roi-header"><div class="roi-led"></div>Gap Analysis · ${regionNode(s)}</div>
-          <div class="roi-body">
-            <div class="roi-row"><span class="roi-key">Monthly est.</span><span class="roi-val">~$${monthlyRevEst(s).toLocaleString()}</span></div>
-            <div class="roi-row"><span class="roi-key">Market growth</span><span class="roi-val">${marketGrowth(s)}</span></div>
-            <div class="roi-row"><span class="roi-key">Setup cost</span><span class="roi-val">$${s.setupCost.toLocaleString()}</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="card-footer">
-        <span class="card-source">${s.source}</span>
-        ${showActions ? `<div class="action-btns"><button class="key-btn key-keep" onclick="keepCard(${s.id},event)">Pipeline This</button><button class="key-btn key-zap" onclick="zapCard(${s.id},event)">Discard</button></div>` : `<button class="key-btn key-keep" style="margin-left:auto" onclick="event.stopPropagation();openSignalSource(${s.id})">Source This Gap</button>`}
-      </div>
-    </div>`;
-}
-
-function renderCards(data) {
-  const grid = document.getElementById('cards-grid');
-  if (!data.length) { grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Alpha Found</div><div class="empty-desc">Adjust stream or region filters</div></div>'; return; }
-  grid.innerHTML = data.map(s => cardMarkup(s, { showActions:true, selectable:true })).join('');
-}
-
-function renderHub() {
-  const hubList = document.getElementById('hub-list');
-  if (!hubList) return;
-  hubList.innerHTML = keptSignals.slice(0,10).map(s => `
-    <div class="hub-item" onclick="showDetail(${s.id})" id="hub-item-${s.id}">
-      <div class="hub-item-id">${sigId(s)} // ${streamLabel(s.stream)} // ${formatCode(s.sourceType)}</div>
-      <div class="hub-item-title">${s.title}</div>
-      <div class="hub-item-roi">Monthly est. ~$${monthlyRevEst(s).toLocaleString()} · ${marketGrowth(s)}</div>
-      <div class="hub-item-source">${s.source} // ${regionNode(s)}</div>
-    </div>`).join('');
-}
-
-function showDetail(id) {
-  const s = keptSignals.find(x => x.id===id);
-  if (!s) return;
-  activeSignalId = id;
-  const detailTitle = document.getElementById('detail-title');
-  const detailOrigin = document.getElementById('detail-origin');
-  const detailBody = document.getElementById('detail-body');
-  if (!detailTitle || !detailOrigin || !detailBody) return;
-  document.querySelectorAll('.hub-item').forEach(el => el.classList.remove('selected'));
-  const el = document.getElementById(`hub-item-${id}`);
-  if (el) el.classList.add('selected');
-  uiState.hubSignalId = id; saveUiState();
-  detailTitle.textContent = signalHeader(s);
-  detailOrigin.textContent = `${originReadout(s)} · Source`;
-  detailBody.innerHTML = `
-    <div class="detail-row"><span class="detail-key">Stream</span><span class="detail-val">${streamBreakdown(s)}</span></div>
-    <div class="detail-row"><span class="detail-key">Signal ID</span><span class="detail-val">${sigId(s)}</span></div>
-    <div class="detail-row"><span class="detail-key">Setup Cost</span><span class="detail-val">$${s.setupCost.toLocaleString()}</span></div>
-    <div class="detail-row"><span class="detail-key">Unit Price</span><span class="detail-val">$${s.unitPrice}</span></div>
-    <div class="detail-row"><span class="detail-key">Monthly est.</span><span class="detail-val">~$${monthlyRevEst(s).toLocaleString()}</span></div>
-    <div class="detail-row"><span class="detail-key">Market growth</span><span class="detail-val">${marketGrowth(s)}</span></div>
-    <div class="detail-row"><span class="detail-key">Key benefits</span><span class="detail-val">${benefitTags(s).join(' · ')}</span></div>
-    <div class="detail-row"><span class="detail-key">Source</span><span class="detail-val">${s.source}</span></div>
-    ${s.tradeShow ? `<div class="detail-row"><span class="detail-key">Event</span><span class="detail-val">${s.tradeShow}</span></div>` : ''}
-    <div class="copy-module">
-      <div class="copy-module-header">Export Alpha</div>
-      <div class="copy-module-body">
-        <div class="copy-text">${sigId(s)} // ${regionNode(s)} // ${signalDate(s)}<br><br>${s.title}<br><br>Avg setup: $${s.setupCost.toLocaleString()} // Monthly est. ~$${monthlyRevEst(s).toLocaleString()} // Market growth: ${marketGrowth(s)}<br>Benefits: ${benefitTags(s).join(' · ')}</div>
-        <div class="copy-actions">
-          <button class="btn btn-ghost" style="font-size:9px" onclick="copySignalSummary(${s.id})">Copy</button>
-          <button class="btn btn-signal" style="font-size:9px" onclick="openSignalSource(${s.id})">Source This Gap</button>
-        </div>
-      </div>
-    <div class="social-extract" id="social-extract">
-      <div class="social-extract-header">Extract for Socials</div>
-      <div class="social-format-tabs">
-        <button class="fmt-tab active" data-fmt="tiktok">TikTok 9:16</button>
-        <button class="fmt-tab" data-fmt="reels">Reels</button>
-        <button class="fmt-tab" data-fmt="shorts">Shorts</button>
-      </div>
-      <div class="social-caption-box">
-        <div class="social-caption-label">Hook</div>
-        <div class="social-caption-text" id="social-hook"></div>
-      </div>
-      <div class="social-caption-box">
-        <div class="social-caption-label">Caption + Tags</div>
-        <div class="social-caption-text" id="social-caption"></div>
-      </div>
-      <div class="social-meta" id="social-meta"></div>
-      <button class="social-copy-btn" id="social-copy-btn">Copy Caption</button>
-    </div>
-    </div>`;
-  wireSocialExtract(s);
-}
-
-function socialCaption(s, fmt) {
-  const fmtMeta = {
-    tiktok:  { label: 'TikTok 9:16', dur: '15–60s', ratio: '1080×1920' },
-    reels:   { label: 'Instagram Reels', dur: '15–90s', ratio: '1080×1920' },
-    shorts:  { label: 'YouTube Shorts', dur: '≤60s', ratio: '1080×1920' }
-  };
-  const meta = fmtMeta[fmt] || fmtMeta.tiktok;
-  const monthly = monthlyRevEst(s).toLocaleString();
-  const growth = marketGrowth(s);
-  const benefits = benefitTags(s).join(' · ');
-  const hooks = {
-    tiktok:  'This type of business typically generates ~$' + monthly + '/month.',
-    reels:   'A ' + (s.stream === 'TECH' ? 'tech-enabled' : 'scalable') + ' business with ' + growth + ' market growth potential.',
-    shorts:  'Avg setup: $' + s.setupCost.toLocaleString() + '. Market growing at ' + growth + '.'
-  };
-  const hook = hooks[fmt] || hooks.tiktok;
-  const streamTag = s.stream === 'TECH' ? 'TechBusiness' : s.stream === 'BUSINESS' ? 'BusinessModel' : 'ConceptBiz';
-  const body = s.title + '\n\n' +
-    'Origin: ' + (s.originLabel || s.origin) + '\n' +
-    'Avg setup: $' + s.setupCost.toLocaleString() + '\n' +
-    'Monthly est.: ~$' + monthly + '\n' +
-    'Market growth: ' + growth + '\n' +
-    'Benefits: ' + benefits + '\n\n' +
-    '#FutureOfBusiness #' + streamTag + ' #PassiveIncome #BusinessIdea #Startup';
-  return { hook, caption: body, meta };
-}
-
-function renderSocialExtract(s, fmt) {
-  const hookEl = document.getElementById('social-hook');
-  const captionEl = document.getElementById('social-caption');
-  const metaEl = document.getElementById('social-meta');
-  if (!hookEl || !captionEl || !metaEl) return;
-  const { hook, caption, meta } = socialCaption(s, fmt);
-  hookEl.textContent = hook;
-  captionEl.textContent = caption;
-  metaEl.innerHTML = '<span class="social-meta-item">' + meta.label + '</span>' +
-    '<span class="social-meta-item">' + meta.dur + '</span>' +
-    '<span class="social-meta-item">' + meta.ratio + '</span>';
-}
-
-function wireSocialExtract(s) {
-  const tabs = document.querySelectorAll('.fmt-tab');
-  let activeFmt = 'tiktok';
-  renderSocialExtract(s, activeFmt);
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      tabs.forEach(function(t) { t.classList.remove('active'); });
-      tab.classList.add('active');
-      activeFmt = tab.dataset.fmt;
-      renderSocialExtract(s, activeFmt);
-    });
-  });
-  const copyBtn = document.getElementById('social-copy-btn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function() {
-      const { hook, caption } = socialCaption(s, activeFmt);
-      const fullText = hook + '\n\n' + caption;
-      navigator.clipboard.writeText(fullText).then(function() {
-        copyBtn.textContent = 'Copied!';
-        copyBtn.classList.add('copied');
-        setTimeout(function() { copyBtn.textContent = 'Copy Caption'; copyBtn.classList.remove('copied'); }, 2000);
-      }).catch(function() {
-        copyBtn.textContent = 'Copy failed';
-        setTimeout(function() { copyBtn.textContent = 'Copy Caption'; }, 2000);
-      });
-    });
-  }
-}
-
-// Unified filter – works with an explicit filter argument OR with the global _gapFilter
-function getFilteredSignals(filter) {
-  // If no argument was passed, fall back to the UI’s current filter
-  const gf = filter || window._gapFilter || 'all';
-  // Load persisted favorites (if any)
-  if (typeof favorites === 'undefined') {
-    // safety fallback – will be defined later when UI loads
-    favorites = [];
-  }
-
-  // Start with all non‑removed signals
-  let results = signals.filter(s => !s._removed);
-
-  if (gf !== 'all') {
-    // ---------- FAVORITES ----------
-    if (gf === 'favorites') {
-      results = results.filter(s => favorites.includes(s.id));
-    }
-    // ---------- REGION FILTER ----------
-    else {
-      const regionFilters = ['asia','europe','middle_east','americas'];
-      if (regionFilters.includes(gf)) {
-        results = results.filter(function(s) {
-          const origin = normalizeOrigin(s.origin);
-          return gf === 'middle_east' ? origin === 'me' : origin === gf;
-        });
-      }
-      // ---------- STREAM FILTER ----------
-      else {
-        const streamMap = { tech: 'tech', business: 'biz', concepts: 'rd' };
-        const wanted = streamMap[gf] || gf;
-        results = results.filter(function(s) {
-          return normalizeStream(s.stream) === wanted ||
-                 String(s.type || '').toLowerCase() === wanted;
-        });
-      }
-    }
-  }
-  return results;
-}
-function syncFilterControls(filter) {
-  document.querySelectorAll('.filter-key').forEach(n => n.classList.toggle('active', n.dataset.filter===filter));
-}
-
-function setActiveView(view, persist=true) {
-  uiState.activeView = 'triage';
-  if (persist) saveUiState();
-}
-
-function toggleTriageSelect(id) {
-  if (selectedTriageId !== null) { const p = document.getElementById(`card-${selectedTriageId}`); if (p) p.classList.remove('triage-selected'); }
-  selectedTriageId = selectedTriageId===id ? null : id;
-  if (selectedTriageId !== null) { const n = document.getElementById(`card-${selectedTriageId}`); if (n) n.classList.add('triage-selected'); }
-}
-
-function keepCard(id, evt) {
-  if (evt) evt.stopPropagation();
-  const card = document.getElementById(`card-${id}`);
-  if (!card) return;
-  if (selectedTriageId===id) selectedTriageId=null;
-  card.style.opacity='0.24'; card.style.pointerEvents='none';
-  showToast('Alpha added to pipeline'); updateTriageCount(-1);
-  if (!favorites.includes(id)) { favorites.push(id); saveFavorites(); renderGapSaves(); }
-}
-
-function zapCard(id, evt) {
-  if (evt) evt.stopPropagation();
-  const card = document.getElementById(`card-${id}`);
-  if (!card) return;
-  if (selectedTriageId===id) selectedTriageId=null;
-  card.style.opacity='0'; card.style.pointerEvents='none';
-  setTimeout(() => card.remove(), 180);
-  showToast('Signal removed from queue'); updateTriageCount(-1);
-}
-
-function zapAll() {
-  selectedTriageId=null;
-  document.querySelectorAll('#cards-grid .signal-card').forEach((card,i) => { setTimeout(() => { card.style.opacity='0'; setTimeout(()=>card.remove(),160); }, i*24); });
-  document.getElementById('stat-unprocessed').textContent='0';
-  document.getElementById('triage-count').textContent='0';
-  showToast('Queue cleared');
-}
-
-function updateTriageCount(delta) {
-  const c = document.getElementById('triage-count');
-  const s = document.getElementById('stat-unprocessed');
-  const n = Math.max(0, parseInt(c.textContent,10)+delta);
-  c.textContent=n; s.textContent=n;
-}
-
-function filterCards(type) {
-  const f = normalizeFilter(type);
-  uiState.triageFilter=f; syncFilterControls(f); renderCards(getFilteredSignals(f)); saveUiState();
-}
-
-function filterByRegion(region) {
-  const r = normalizeRegion(region);
-  document.querySelectorAll('.region-module').forEach(n => n.classList.remove('active'));
-  const el = document.getElementById(`region-${r}`);
-  if (el) el.classList.add('active');
-  uiState.mapRegion=r; saveUiState();
-  const filtered = keptSignals.filter(s => s.origin===r);
-  const grid = document.getElementById('map-signals-grid');
-  if (!grid) return;
-  if (!filtered.length) { grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-title">No Sourced Alpha</div><div class="empty-desc">No alpha found for this region</div></div>'; return; }
-  grid.innerHTML = filtered.slice(0,4).map(s => cardMarkup(s)).join('');
-}
-
-function switchView(view) {
-  // Single view mode
-}
-function updateBreadcrumb(view) {
-  const steps = ['bc-input','bc-triage','bc-analysis','bc-export'];
-  const viewMap = { triage:'bc-triage', map:'bc-analysis', hub:'bc-analysis', pipeline:'bc-export' };
-  const active = viewMap[view] || 'bc-triage';
-  const activeIdx = steps.indexOf(active);
-  steps.forEach((id, i) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.className = 'breadcrumb-step' + (i < activeIdx ? ' done' : i === activeIdx ? ' active' : '');
-  });
-}
-
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
-  const isGreen = /REFRESH|KEPT|QUEUED|ACTIVE|READY/.test(msg);
-  toast.textContent = msg;
-  toast.style.borderColor = 'var(--border-blue)';
-  toast.style.color = 'var(--border-blue)';
-  toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'),2800);
-}
-
-function restoreLegacyUiState() {
-  uiState.activeView=normalizeView(uiState.activeView);
-  uiState.triageFilter=normalizeFilter(uiState.triageFilter);
-  uiState.mapRegion=normalizeRegion(uiState.mapRegion);
-  uiState.hubSignalId=normalizeHubSignalId(uiState.hubSignalId);
-  renderHub(); filterCards(uiState.triageFilter); filterByRegion(uiState.mapRegion);
-  if (uiState.hubSignalId!==null) showDetail(uiState.hubSignalId);
-  setActiveView(uiState.activeView, false); saveUiState();
-}
-
-function doFinancialCalc() {
-  const cost = Number(document.getElementById('fc-cost').value) || 50000;
-  const growth = Number(document.getElementById('fc-growth').value) || 25;
-  const revenue = Number(document.getElementById('fc-revenue').value) || 8000;
-  const tam = Number(document.getElementById('fc-tam').value) || 500000000;
-  const out = document.getElementById('fc-out');
-  if(!out) return;
-  const annualRev = revenue * 12;
-  const yr3Rev = Math.round(annualRev * Math.pow(1 + growth/100, 3));
-  const yr5Rev = Math.round(annualRev * Math.pow(1 + growth/100, 5));
-  const tamPct = ((annualRev / tam) * 100).toFixed(4);
-  const paybackMonths = Math.ceil(cost / revenue);
-  const grade = paybackMonths <= 12 ? 'Strong Signal' : paybackMonths <= 24 ? 'Moderate' : 'Long Horizon';
-  const gradeClass = paybackMonths <= 12 ? 'fc-tag-good' : 'fc-tag-caution';
-  out.innerHTML =
-    '<div class="fc-row"><span>Est. Annual Revenue</span><span class="fc-row-val">$' + annualRev.toLocaleString() + '</span></div>' +
-    '<div class="fc-row"><span>Year 3 Projection</span><span class="fc-row-val">$' + yr3Rev.toLocaleString() + '</span></div>' +
-    '<div class="fc-row"><span>Year 5 Projection</span><span class="fc-row-val">$' + yr5Rev.toLocaleString() + '</span></div>' +
-    '<div class="fc-row"><span>TAM Capture (Yr 1)</span><span class="fc-row-val">' + tamPct + '%</span></div>' +
-    '<div class="fc-row"><span>Capital Recovery</span><span class="fc-row-val">~' + paybackMonths + ' months</span></div>' +
-    '<br><span class="fc-tag ' + gradeClass + '">' + grade + '</span>';
-}
-
-
-// ── GAP.HTML FEATURE ADDITIONS ──────────────────────────────────────────────
-
-// Signal image thumbnails (mapped by stream/source type for visual richness)
-
-function getThumb(s) {
-  if (isDirectSourceImage(s.thumbUrl)) return s.thumbUrl;
-  if (isDirectSourceImage(s.mediaUrl)) return s.mediaUrl;
-  if (s.thumbUrl && isYouTubeHostedUrl(s.thumbUrl)) return s.thumbUrl;
-  if (s.mediaUrl && looksLikeYouTube(s.mediaUrl)) {
-    var embedUrl = toYouTubeEmbed(s.mediaUrl);
-    var parts = embedUrl ? embedUrl.split('/') : [];
-    var ytId = parts.length ? parts[parts.length - 1].split('?')[0] : '';
-    if (ytId) return 'https://img.youtube.com/vi/' + ytId + '/hqdefault.jpg';
-  }
-  return '';
-}
-function getGapScore(s) {
-  return getGapMetrics(s).gapScore;
-}
-
-function renderHeroMedia(s) {
-  const media = document.getElementById('heroMedia');
-  if (!media) return;
-  const title = escapeHtml(s.title || 'Selected signal');
-  const thumb = getThumb(s);
-  let body = '';
-  if (isDirectSourceVideo(s.mediaUrl)) {
-    body = '<video controls playsinline preload="metadata"' + (thumb ? ' poster="' + escapeHtml(thumb) + '"' : '') + '><source src="' + escapeHtml(s.mediaUrl) + '"></video>';
-  } else if (thumb) {
-    body = '<img src="' + escapeHtml(thumb) + '" alt="' + title + '" loading="eager" />';
-  } else if (looksLikeYouTube(s.mediaUrl)) {
-    body = '<div class="hero-yt-wrap" style="position:relative;width:100%;padding-top:177.7%;background:#000"><iframe src="' + escapeHtml(toYouTubeEmbed(s.mediaUrl)) + '" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%"></iframe></div>';
-  } else {
-    body = '<div class="hero-placeholder" id="heroPlaceholder">No source media in feed</div>';
-  }
-  media.style.backgroundImage = 'none';
-  media.innerHTML = body + '<div class="hero-placeholder" id="heroPlaceholder" style="display:none"></div><div class="alpha-badge" id="heroBadge" style="display:none"></div>';
-}
-
-function copySignalSummary(id) {
-  const s = signals.find(function(item) { return item.id === id; }) || keptSignals.find(function(item) { return item.id === id; });
-  if (!s) return;
-  const text = sigId(s) + ' // ' + regionNode(s) + ' // ' + signalDate(s) + '\n\n' +
-    s.title + '\n\n' +
-    'Avg setup: $' + s.setupCost.toLocaleString() +
-    ' // Monthly est. ~$' + monthlyRevEst(s).toLocaleString() +
-    ' // Market growth: ' + marketGrowth(s) + '\n' +
-    'Benefits: ' + benefitTags(s).join(' · ');
-  copyToClipboardSafe(text, function(ok) {
-    showToast(ok ? 'Copied to clipboard' : 'Copy failed');
-  });
-}
-
-// Re-render the signal cards in gap.html media-card style
-function renderGapCards() {
-  const grid = document.getElementById('cards-grid');
-  if (!grid) return;
-  const filtered = getFilteredSignals();
-  if (!filtered.length) {
-    grid.innerHTML = '<div class="empty-g">No signals match your filters</div>';
-    return;
-  }
-  grid.innerHTML = filtered.map(s => {
-    const thumb = getThumb(s);
-    const gapScore = getGapScore(s);
-    const originClass = normalizeOrigin(s.origin).replace(/[^a-z]/g, '-').replace(/^me$/, 'middle-east');
-    const isPatent = normalizeSourceType(s.sourceType) === 'PATENT' || (s.source || '').toLowerCase().includes('patent');
-    return `<article class="media-card-g" data-origin="${normalizeOrigin(s.origin)}" onclick="selectSignal(${s.id})">
-      <div class="card-thumb-g">
-        ${thumb ? `<img src="${thumb}" alt="${s.title}" loading="lazy" onerror="this.remove();"/>` : '<div class="card-thumb-empty-g">No source media</div>'}
-        <div class="thumb-overlay-g"><span class="play-icon-g">▶</span></div>
-      </div>
-      <div class="card-title-g">${s.title}</div>
-      <div class="card-chips-g">
-        <span class="chip-g ${originClass}">${prettyOriginLabel(s.origin, s.originLabel)}</span>
-        <span class="chip-g">${streamLabel(s.stream)}</span>
-<span class="chip-g alpha">${gapScore}</span>
-        ${isPatent ? '<span class="chip-g patent">Patent</span>' : ''}
-      </div>
-      <div class="card-desc-g">${(s.desc || '').slice(0,100)}${s.desc && s.desc.length > 100 ? '…' : ''}</div>
-      <div class="card-actions-g">
-        <button onclick="event.stopPropagation();keepCard(${s.id})">Save</button>
-        <button onclick="event.stopPropagation();addToGapQueue(${s.id})">Queue</button>
-        <button onclick="event.stopPropagation();openModal(${s.id})">Analyze</button>
-      </div>
-    </article>`;
-  }).join('');
-  if (window._activeRegion) {
-    applyRegionFocus(window._activeRegion, { syncBubble: true });
-  }
-}
-
-// Select a signal → update hero
-function selectSignal(id) {
-  const s = signals.find(x => x.id === id);
-  if (!s) return;
-  activeSignalId = id;
-  const gapScore = getGapMetrics(s).gapScore;
-
-  const _ht = document.getElementById('heroTitle');
-  const _hi = document.getElementById('heroInsight');
-  if (_ht) _ht.textContent = s.title;
-  if (_hi) _hi.textContent = (s.desc || '') + ' · ' + (s.originLabel || s.origin || '') + ' · GAP Score ' + gapScore;
-  renderHeroMedia(s);
-  const badge = document.getElementById('heroBadge');
-  if (badge) {
-    badge.textContent = 'GAP Score ' + gapScore;
-    badge.style.display = 'block';
-  }
-  gapLog('Loaded: ' + s.title);
-  wireHeroSocialExtract(s);
-  renderSignalInsight(s);
-  applyRegionFocus(regionFilterKey(s.origin), { syncBubble: true });
-  if (typeof showDetail === 'function') showDetail(s.id);
-}
-
-// Wire social extract into the hero col2 panel
-var _heroSocialSignal = null;
-var _heroSocialFmt = 'tiktok';
-function wireHeroSocialExtract(s) {
-  _heroSocialSignal = s;
-  const header = document.getElementById('hero-social-header');
-  const body = document.getElementById('hero-social-body');
-  if (header) header.style.display = 'none';
-  if (body) body.style.display = 'block';
-  renderHeroSocialExtract(s, _heroSocialFmt);
-  const copyBtn = document.getElementById('hero-social-copy-btn');
-  if (copyBtn && !copyBtn._wired) {
-    copyBtn._wired = true;
-    copyBtn.addEventListener('click', function() {
-      if (!_heroSocialSignal) return;
-      const d = socialCaption(_heroSocialSignal, _heroSocialFmt);
-      const fullText = d.hook + '\n\n' + d.caption;
-      navigator.clipboard.writeText(fullText).then(function() {
-        copyBtn.textContent = 'Copied!';
-        copyBtn.classList.add('copied');
-        setTimeout(function() { copyBtn.textContent = 'Copy Caption'; copyBtn.classList.remove('copied'); }, 2000);
-      }).catch(function() {
-        copyBtn.textContent = 'Copy failed';
-        setTimeout(function() { copyBtn.textContent = 'Copy Caption'; }, 2000);
-      });
-    });
-  }
-}
-function heroFmtTab(btn, fmt) {
-  document.querySelectorAll('#hero-social-panel .fmt-tab').forEach(function(t) { t.classList.remove('active'); });
-  btn.classList.add('active');
-  _heroSocialFmt = fmt;
-  if (_heroSocialSignal) renderHeroSocialExtract(_heroSocialSignal, fmt);
-}
-function renderHeroSocialExtract(s, fmt) {
-  const d = socialCaption(s, fmt);
-  const hookEl = document.getElementById('hero-social-hook');
-  const capEl = document.getElementById('hero-social-caption');
-  const metaEl = document.getElementById('hero-social-meta');
-  if (hookEl) hookEl.textContent = d.hook;
-  if (capEl) capEl.textContent = d.caption;
-  if (metaEl) metaEl.innerHTML = '<span class="social-meta-item">' + d.meta.label + '</span><span class="social-meta-item">' + d.meta.dur + '</span><span class="social-meta-item">' + d.meta.ratio + '</span>';
-}
-
-// Gap queue
-function addToGapQueue(id) {
-  const s = signals.find(x => x.id === id);
-  if (!s || gapQueue.includes(id)) return;
-  gapQueue.push(id);
-  renderGapQueue();
-  gapLog('Queued: ' + s.title);
-}
-function renderGapQueue() {
-  const el = document.getElementById('queueList');
-  const cnt = document.getElementById('queueCount');
-  if (!el) return;
-  if (!gapQueue.length) {
-    el.innerHTML = '<div class="queue-empty-g">No items in queue</div>';
-    if (cnt) cnt.style.display = 'none';
-    return;
-  }
-  if (cnt) { cnt.textContent = gapQueue.length; cnt.style.display = 'inline'; }
-  el.innerHTML = gapQueue.map((id, i) => {
-    const s = signals.find(x => x.id === id);
-    return `<div class="queue-row-g" onclick="selectSignal(${id})">${i+1}. ${s ? s.title.slice(0,34) : id}<span style="color:var(--accent);font-size:10px;margin-left:6px">α${getGapScore(s||{id:0,stream:'tech'})}
-</span></div>`;
-  }).join('');
-}
-
-// Recent saves thumbnail grid
-function renderGapSaves() {
-  const grid = document.getElementById('recentSaves');
-  if (!grid) return;
-  const saved = signals.filter(s => s._saved).slice(-8);
-  document.getElementById('saveCount').textContent = signals.filter(s=>s._saved).length;
-  if (!saved.length) { grid.innerHTML = ''; return; }
-  grid.innerHTML = saved.map(s => {
-    const thumb = getThumb(s);
-    return thumb
-      ? `<div class="thumb-mini" style="background-image:url(${thumb})" onclick="selectSignal(${s.id})" title="${s.title}"></div>`
-      : `<div class="thumb-mini empty" onclick="selectSignal(${s.id})" title="${s.title}">No Media</div>`;
-  }).join('');
-}
-
-// Gap filter chips
-function setGapFilter(btn, filter) {
-  document.querySelectorAll('.chip-btn-g').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  window._gapFilter = filter;
-  renderGapCards();
-  if (['asia','europe','middle_east','americas'].includes(filter)) {
-    applyRegionFocus(filter, { syncBubble: true });
-  } else {
-    clearRegionFocus({ keepActiveBubble: false });
-  }
-}
-
-
-
-// Financial calc for workbench
-function renderSignalInsight(s) {
-  const panel = document.getElementById('signal-insight-panel');
-  if (!panel) return;
-  const metrics = getGapMetrics(s);
-  const monthly = Math.round(s.unitPrice * s.dailyVolume * 30);
-  const avgEarnings = '$' + monthly.toLocaleString() + '/mo avg.';
-  const costLow = Math.round(s.setupCost * 0.8);
-  const costHigh = Math.round(s.setupCost * 1.4);
-  const costStr = '$' + (costLow >= 1000 ? (costLow/1000).toFixed(0) + 'k' : costLow) + '-$' + (costHigh >= 1000 ? (costHigh/1000).toFixed(0) + 'k' : costHigh);
-  const growth = marketGrowth(s);
-  const thesis = gapThesis(s);
-  panel.innerHTML =
-    '<div class="insight-row"><div class="insight-body"><div class="insight-label">Market Reference</div><div class="insight-val">Industry growth: ' + growth + '</div></div></div>' +
-    '<div class="insight-row"><div class="insight-body"><div class="insight-label">Average Earnings</div><div class="insight-val">' + avgEarnings + '</div></div></div>' +
-    '<div class="insight-row"><div class="insight-body"><div class="insight-label">Average Cost of Entry</div><div class="insight-val">Est. startup cost: ' + costStr + '</div></div></div>' +
-    '<div class="insight-row"><div class="insight-body"><div class="insight-label">GAP Score</div><div class="insight-gauge-wrap"><div class="insight-gauge-track"><div class="insight-gauge-fill" style="width:' + metrics.gapScore + '%"></div></div><span class="insight-diff-num">' + metrics.gapScore + '/100 — Ease ' + metrics.easeOfEntry + ' · Longevity ' + metrics.longevity + ' · Viability ' + metrics.viability + '</span></div></div></div>' +
-    '<div class="insight-row"><div class="insight-body"><div class="insight-label">Gap Thesis</div><div class="insight-val insight-thesis">' + thesis + '</div></div></div>';
-  gapLog('Signal insight: ' + (s.title || s.id));
-}
-
-// Export template
-function exportTemplate(t) {
-  const fmt = String(t || 'TikTok').toLowerCase();
-  const s = signals.find(function(item) { return item.id === activeSignalId; }) || keptSignals.find(function(item) { return item.id === activeSignalId; });
-  if (!s) {
-    showToast('Select a signal first');
-    return;
-  }
-  const d = socialCaption(s, fmt === 'reels' ? 'reels' : fmt === 'shorts' ? 'shorts' : 'tiktok');
-  copyToClipboardSafe(d.hook + '\n\n' + d.caption, function(ok) {
-    if (!ok) showToast('Copy failed');
-  });
-  downloadOrOpenMedia(s, t);
-  gapLog('Export prepared "' + s.title + '" → ' + t);
-  showToast(t + ' export ready');
-}
-
-// Console logger
-function gapLog(msg) {
-  const el = document.getElementById('gapConsole');
-  if (!el) return;
-  const line = '[' + new Date().toLocaleTimeString() + '] ' + msg;
-  el.textContent = line + '\n' + el.textContent.slice(0, 400);
-}
-
-// Modal
-function openModal(id) {
-  const s = signals.find(x => x.id === id);
-  if (!s) return;
-  const gapScore = getGapScore(s);
-  document.getElementById('modalTitle').textContent = s.title;
-  document.getElementById('modalBody').innerHTML = '<strong style="color:var(--accent)">GAP Score: ' + gapScore + '</strong><br>Region: ' + (s.originLabel || s.origin || '') + ' | Stream: ' + (s.stream || '') + '<br>Source: ' + (s.source || '') + '<br><br>' + (s.desc || '');
-  document.getElementById('modalBg').classList.add('open');
-  gapLog('Analyzed: ' + s.title);
-}
-
-function openSaveModal(id) {
-  const s = keptSignals.find(x => x.id === id) || signals.find(x => x.id === id);
-  if (!s) return;
-  document.getElementById('saveModalTitle').textContent = sigId(s) + ' — ' + s.title;
-  const monthly = monthlyRevEst(s).toLocaleString();
-  const growth = marketGrowth(s);
-  const benefits = benefitTags(s).join(' · ');
-  document.getElementById('saveModalBody').innerHTML = '<div style="margin-bottom:14px;"><div style="font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:0.1em;text-transform:uppercase;">Gap Analysis Summary</div><div style="font-size:11px;color:var(--text);line-height:1.7;">' + s.desc + '</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;"><div style="background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;"><div style="font-size:9px;color:var(--muted);margin-bottom:3px;">MONTHLY EST.</div><div style="font-size:14px;font-weight:700;color:var(--accent);">~$' + monthly + '</div></div><div style="background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;"><div style="font-size:9px;color:var(--muted);margin-bottom:3px;">MARKET GROWTH</div><div style="font-size:14px;font-weight:700;color:var(--accent);">' + growth + '</div></div><div style="background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;"><div style="font-size:9px;color:var(--muted);margin-bottom:3px;">SETUP COST</div><div style="font-size:14px;font-weight:700;color:var(--text);">$' + s.setupCost.toLocaleString() + '</div></div><div style="background:rgba(0,0,0,0.3);padding:8px;border-radius:6px;"><div style="font-size:9px;color:var(--muted);margin-bottom:3px;">BENEFITS</div><div style="font-size:11px;color:var(--text);">' + benefits + '</div></div></div></div><div class="social-extract" id="save-social-extract" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:14px;margin-top:4px;"><div class="social-extract-header">Extract for Socials</div><div class="social-format-tabs"><button class="fmt-tab active" data-fmt="tiktok">TikTok 9:16</button><button class="fmt-tab" data-fmt="reels">Reels</button><button class="fmt-tab" data-fmt="shorts">Shorts</button></div><div class="social-caption-box"><div class="social-caption-label">Hook</div><div class="social-caption-text" id="save-social-hook"></div></div><div class="social-caption-box"><div class="social-caption-label">Caption + Tags</div><div class="social-caption-text" id="save-social-caption"></div></div><div class="social-meta" id="save-social-meta"></div><button class="social-copy-btn" id="save-social-copy-btn">Copy Caption</button></div>';
-  wireSaveModalSocial(s);
-  document.getElementById('saveModalBg').classList.add('open');
-  highlightMapDot(s.origin);
-  gapLog('Saved: ' + s.title);
-}
-
-function wireSaveModalSocial(s) {
-  const tabs = document.querySelectorAll('#save-social-extract .fmt-tab');
-  let activeFmt = 'tiktok';
-  function renderSave(fmt) {
-    const d = socialCaption(s, fmt);
-    const hookEl = document.getElementById('save-social-hook');
-    const captionEl = document.getElementById('save-social-caption');
-    const metaEl = document.getElementById('save-social-meta');
-    if (hookEl) hookEl.textContent = d.hook;
-    if (captionEl) captionEl.textContent = d.caption;
-    if (metaEl) metaEl.innerHTML = '<span class="social-meta-item">' + d.meta.label + '</span><span class="social-meta-item">' + d.meta.dur + '</span><span class="social-meta-item">' + d.meta.ratio + '</span>';
-  }
-  renderSave(activeFmt);
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      tabs.forEach(function(t) { t.classList.remove('active'); });
-      tab.classList.add('active');
-      activeFmt = tab.dataset.fmt;
-      renderSave(activeFmt);
-    });
-  });
-  const copyBtn = document.getElementById('save-social-copy-btn');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function() {
-      const d = socialCaption(s, activeFmt);
-      const fullText = d.hook + '\n\n' + d.caption;
-      navigator.clipboard.writeText(fullText).then(function() {
-        copyBtn.textContent = 'Copied!';
-        copyBtn.classList.add('copied');
-        setTimeout(function() { copyBtn.textContent = 'Copy Caption'; copyBtn.classList.remove('copied'); }, 2000);
-      }).catch(function() { copyBtn.textContent = 'Copy failed'; setTimeout(function() { copyBtn.textContent = 'Copy Caption'; }, 2000); });
-    });
-  }
-}
-
-function closeSaveModal() {
-  document.getElementById('saveModalBg').classList.remove('open');
-  resetMapDots();
-}
-
-function openPipelineModal() {
-  const content = document.getElementById('pipelineModalContent');
-  if (content && !content.innerHTML.trim()) { content.innerHTML = getPipelineConfigHTML(); }
-  document.getElementById('pipelineModalBg').classList.add('open');
-}
-
-function closePipelineModal() {
-  document.getElementById('pipelineModalBg').classList.remove('open');
-}
-
-function getPipelineConfigHTML() {
-  return '<div class="priority-alert" style="margin-bottom:16px;"><strong>Priority Alpha Sources:</strong> WIPO Patents, RetailTech Japan 2026, Tech &amp; Hardware Stream<div class="priority-led-box">Active</div></div><div class="pipeline-section"><div class="pipeline-header-row"><div class="pipeline-info"><div class="pipeline-name">Tech &amp; Hardware</div><div class="pipeline-freq">Daily scan</div></div><div class="pipeline-led led-active">Live</div></div><div class="pipeline-bar"><div class="pipeline-fill fill-active" style="width:73%"></div></div><div class="pipeline-sources"><div class="src-card"><div class="src-icon">W</div><div><div class="src-name">WIPO Patents via SerpApi</div><div class="src-desc">Keywords: unattended retail, autonomous service, modular business</div></div><div class="src-status src-live">Live</div></div><div class="src-card"><div class="src-icon">JP</div><div><div class="src-name">RetailTech Japan 2026</div><div class="src-desc">RSS - Tokyo Big Sight - Auto-translated</div></div><div class="src-status src-live">Live</div></div><div class="src-card"><div class="src-icon">CE</div><div><div class="src-name">CES 2026 Innovation Awards</div><div class="src-desc">RSS feed - official award announcements</div></div><div class="src-status src-pending">Pending</div></div><div class="src-card"><div class="src-icon">SA</div><div><div class="src-name">LEAP Conference (Riyadh)</div><div class="src-desc">RSS - Arabic - Auto-translated via Make.com</div></div><div class="src-status src-pending">Pending</div></div></div></div><div class="pipeline-section" style="margin-top:12px;"><div class="pipeline-header-row"><div class="pipeline-info"><div class="pipeline-name">Business Models</div><div class="pipeline-freq">Bi-weekly scan</div></div><div class="pipeline-led led-scheduled">Scheduled</div></div><div class="pipeline-bar"><div class="pipeline-fill fill-dim" style="width:16%"></div></div><div class="pipeline-sources"><div class="src-card"><div class="src-icon">IG</div><div><div class="src-name">Indiegogo (Innovation/Food)</div><div class="src-desc">Filter: &gt;100% funded</div></div><div class="src-status src-pending">Pending</div></div><div class="src-card"><div class="src-icon">KS</div><div><div class="src-name">Kickstarter (Innovation/Food)</div><div class="src-desc">Cross-ref for signal strength</div></div><div class="src-status src-pending">Pending</div></div></div></div><div class="antifilters" style="margin-top:12px;"><div class="antifilters-header">Pipeline Exclusions</div><div class="antifilters-grid"><div class="af-item af-reject">Dropshipping</div><div class="af-item af-reject">Print on Demand</div><div class="af-item af-reject">Affiliate Marketing</div><div class="af-item af-reject">SaaS (unless hw-linked)</div><div class="af-item af-require">100% Video Required</div><div class="af-item af-require">Auto-translate non-EN</div></div></div>';
-}
-function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
-document.addEventListener('click', e => { if (e.target.id === 'modalBg') closeModal(); });
-
-// Float map — region highlight zones
-function renderFloatMap() {
-  const g = document.getElementById('floatMarkers');
-  if (!g) return;
-  const zones = [
-    { key:'asia',        cx:1560, cy:390, rx:280, ry:200 },
-    { key:'europe',      cx:1050, cy:270, rx:160, ry:130 },
-    { key:'americas',    cx:310,  cy:400, rx:210, ry:270 },
-    { key:'middle_east', cx:1165, cy:430, rx:130, ry:100 }
-  ];
-  g.innerHTML = zones.map(function(z) {
-    return '<g class="region-zone" data-region="' + z.key + '" onclick="selectRegion(\'' + z.key + '\')" style="cursor:pointer">' +
-      '<ellipse class="zone-fill" cx="' + z.cx + '" cy="' + z.cy + '" rx="' + z.rx + '" ry="' + z.ry + '" />' +
-      '<ellipse class="zone-border" cx="' + z.cx + '" cy="' + z.cy + '" rx="' + z.rx + '" ry="' + z.ry + '" />' +
-    '</g>';
-  }).join('');
-}
-
-function highlightMapDot(origin) {
-  const g = document.getElementById('floatMarkers');
-  if (!g) return;
-  const norm = regionFilterKey(origin);
-  g.querySelectorAll('.region-zone').forEach(function(zone) {
-    const r = zone.dataset.region;
-    const active = r === norm;
-    zone.classList.toggle('zone-active', active);
-    zone.classList.toggle('zone-dim', !active);
-  });
-}
-
-function resetMapDots() {
-  const g = document.getElementById('floatMarkers');
-  if (!g) return;
-  g.querySelectorAll('.region-zone').forEach(function(zone) {
-    zone.classList.remove('zone-active','zone-dim');
-  });
-}
-
-function syncRegionBubble(regionKey) {
-  document.querySelectorAll('.chip-btn-g[data-filter]').forEach(function(btn) {
-    const filter = btn.dataset.filter;
-    if (['asia','europe','middle_east','americas'].includes(filter)) {
-      btn.classList.toggle('region-selected', filter === regionKey);
-    } else {
-      btn.classList.remove('region-selected');
-    }
-  });
-}
-
-function applyRegionFocus(regionKey, options) {
-  const opts = options || {};
-  const key = regionFilterKey(regionKey);
-  highlightMapDot(key);
-  document.querySelectorAll('#cards-grid .signal-card, #cards-grid .media-card-g').forEach(function(card) {
-    const reg = regionFilterKey(card.dataset.origin || '');
-    const match = reg === key;
-    card.classList.toggle('region-highlight', match);
-    card.classList.toggle('region-dim', !match);
-  });
-  if (opts.syncBubble !== false) syncRegionBubble(key);
-  window._activeRegion = key;
-}
-
-function clearRegionFocus(options) {
-  const opts = options || {};
-  resetMapDots();
-  document.querySelectorAll('#cards-grid .signal-card, #cards-grid .media-card-g').forEach(function(card) {
-    card.classList.remove('region-highlight', 'region-dim');
-  });
-  if (!opts.keepActiveBubble) syncRegionBubble(null);
-  window._activeRegion = null;
-}
-
-function selectRegion(key) {
-  const regionKey = regionFilterKey(key);
-  if (window._activeRegion === regionKey) { clearRegionSelect(); return; }
-  applyRegionFocus(regionKey, { syncBubble: true });
-}
-function clearRegionSelect() {
-  clearRegionFocus({ keepActiveBubble: false });
-}
-function toggleFloatMap() {
-  const panel = document.getElementById('mapFloatPanel');
-  const toggle = document.getElementById('mapFloatToggle');
-  if (!panel) return;
-  const isCollapsed = panel.classList.toggle('collapsed');
-  if (toggle) toggle.textContent = isCollapsed ? '\u25bc' : '\u25b2';
-}
-
-// Ingest simulation
-var   ingestMsgs = [
-  '• scanning SeoulExpo feed…','• new signal detected: α87','• indexing WIPO patent…',
-  '• 3 new sources added','• refreshing Europe cluster…','• α94 signal — Shenzhen','• idle…'
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const CLIPS = [
+  {id:1,title:"Autonomous Warehouse Drone",source:"tradeshows",region:"Asia",location:"Seoul",alpha:87,patent:true,desc:"Fully autonomous pick-and-place unit operating in unstructured environments. Demoed live at Seoul Trade Expo.",thumb:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=60",lat:360,lng:490},
+  {id:2,title:"Autonomous Sorting Arm — Prototype",source:"tradeshows",region:"Europe",location:"Germany",alpha:82,patent:true,desc:"High-DOF robotic arm achieving 98% sort accuracy on mixed SKU pallets without pre-sorting.",thumb:"https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400&q=60",lat:300,lng:310},
+  {id:3,title:"Textured-Vision Sorting Drone",source:"lab",region:"Asia",location:"Tokyo",alpha:79,patent:false,desc:"Drone equipped with tactile sensor array for texture-based object classification mid-flight.",thumb:"https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400&q=60",lat:340,lng:540},
+  {id:4,title:"Batteryless Sensor Array",source:"patents",region:"Americas",location:"Boston",alpha:91,patent:true,desc:"Energy-harvesting sensor platform drawing power from ambient RF and thermal gradients. Patent filed Q3.",thumb:"https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&q=60",lat:220,lng:130},
+  {id:5,title:"Soft Actuator Exoskeleton",source:"lab",region:"Europe",location:"Zurich",alpha:76,patent:false,desc:"Pneumatic soft-robotics exoskeleton with 40% improved force-to-weight over prior art.",thumb:"https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=400&q=60",lat:295,lng:330},
+  {id:6,title:"Neuromorphic Vision Chip",source:"tradeshows",region:"Asia",location:"Shenzhen",alpha:94,patent:true,desc:"Event-driven vision chip running at 10,000fps equivalent throughput at 0.8W. Shown at CEATEC.",thumb:"https://images.unsplash.com/photo-1518770660439-4636190af476?w=400&q=60",lat:350,lng:520},
+  {id:7,title:"Micro-Turbine Generator Pack",source:"patents",region:"Americas",location:"Austin",alpha:68,patent:true,desc:"Modular micro-turbine array for distributed energy generation. Patent pending across 14 jurisdictions.",thumb:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=60",lat:240,lng:120},
+  {id:8,title:"Bio-Hybrid Actuator Demo",source:"lab",region:"Europe",location:"London",alpha:73,patent:false,desc:"Lab demonstration of a muscle-cell driven micro-actuator achieving controlled contraction cycles.",thumb:"https://images.unsplash.com/photo-1530973428-5bf2db2e4d71?w=400&q=60",lat:275,lng:295},
 ];
-let ingestIdx = 0;
-setInterval(() => {
-  const el = document.getElementById('ingestLog');
-  if (el) el.textContent = ingestMsgs[ingestIdx % ingestMsgs.length];
+
+let queue = [];
+let saves = [];
+let activeFilter = "all";
+let searchQuery = "";
+let selectedId = null;
+
+// ─── UTIL ─────────────────────────────────────────────────────────────────────
+function log(msg){
+  const el = document.getElementById("consoleLog");
+  const line = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  el.textContent = line + "\n" + el.textContent.slice(0,400);
+}
+
+function ingestLine(msg){
+  document.getElementById("ingestLog").textContent = msg;
+}
+
+// ─── FILTER + RENDER ─────────────────────────────────────────────────────────
+function filteredClips(){
+  const src = document.getElementById("sourceFilter").value;
+  const reg = document.getElementById("regionFilter").value;
+  return CLIPS.filter(c=>{
+    if(activeFilter==="alpha" && c.alpha<75) return false;
+    if(activeFilter!=="all" && activeFilter!=="alpha" && c.source!==activeFilter) return false;
+    if(src!=="all" && c.source!==src) return false;
+    if(reg!=="all" && c.region!==reg) return false;
+    if(searchQuery && !c.title.toLowerCase().includes(searchQuery)) return false;
+    return true;
+  });
+}
+
+function renderFeed(){
+  const feed = document.getElementById("feed");
+  const clips = filteredClips();
+  if(!clips.length){feed.innerHTML='<div class="empty">No clips match your filters</div>';return;}
+  feed.innerHTML = clips.map(c=>`
+    <article class="media-card" onclick="selectClip(${c.id})">
+      <div class="card-thumb">
+        <img src="${c.thumb}" alt="${c.title}" loading="lazy" onerror="this.style.display='none'"/>
+        <div class="thumb-overlay"><span class="play-icon">▶</span></div>
+      </div>
+      <div class="card-meta">
+        <div class="card-title">${c.title}</div>
+        <div class="card-chips">
+          <span class="chip">${c.source}</span>
+          <span class="chip">${c.region}</span>
+          <span class="chip alpha">Alpha ${c.alpha}</span>
+          ${c.patent?'<span class="chip patent">Patent</span>':''}
+        </div>
+        <div class="card-desc">${c.desc}</div>
+        <div class="card-actions">
+          <button onclick="event.stopPropagation();saveClip(${c.id})">Save</button>
+          <button onclick="event.stopPropagation();addToQueue(${c.id})">Queue</button>
+          <button onclick="event.stopPropagation();analyzeClip(${c.id})">Analyze</button>
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+// ─── SELECT / HERO ────────────────────────────────────────────────────────────
+function selectClip(id){
+  const c = CLIPS.find(x=>x.id===id);
+  if(!c) return;
+  selectedId = id;
+  document.getElementById("heroPlaceholder").textContent = "";
+  document.getElementById("heroTitle").textContent = c.title;
+  document.getElementById("heroInsight").textContent = c.desc + ` • ${c.region} • Alpha ${c.alpha}`;
+  const badge = document.getElementById("heroBadge");
+  badge.textContent = `Alpha ${c.alpha}`;
+  badge.style.display = "block";
+  // set hero bg image via inline style
+  document.getElementById("heroMedia").style.backgroundImage = `url(${c.thumb})`;
+  document.getElementById("heroMedia").style.backgroundSize = "cover";
+  document.getElementById("heroMedia").style.backgroundPosition = "center";
+  document.getElementById("playback").textContent = `Selected: ${c.title} — ${c.source} / ${c.region}`;
+  document.getElementById("progressBar").style.width = Math.floor(Math.random()*60+20)+"%";
+  log(`Loaded: ${c.title}`);
+}
+
+// ─── SAVE ─────────────────────────────────────────────────────────────────────
+function saveClip(id){
+  const c = CLIPS.find(x=>x.id===id);
+  if(!c || saves.includes(id)) return;
+  saves.push(id);
+  document.getElementById("saveCount").textContent = saves.length;
+  renderSaves();
+  log(`Saved: ${c.title}`);
+}
+
+function renderSaves(){
+  const grid = document.getElementById("recentSaves");
+  grid.innerHTML = saves.slice(-8).map(id=>{
+    const c = CLIPS.find(x=>x.id===id);
+    return `<div class="thumb-mini" style="background-image:url(${c.thumb});background-size:cover;background-position:center" onclick="selectClip(${id})" title="${c.title}"></div>`;
+  }).join("");
+}
+
+// ─── QUEUE ────────────────────────────────────────────────────────────────────
+function addToQueue(id){
+  const c = CLIPS.find(x=>x.id===id);
+  if(!c || queue.includes(id)) return;
+  queue.push(id);
+  renderQueue();
+  log(`Queued: ${c.title}`);
+}
+
+function renderQueue(){
+  const el = document.getElementById("queue");
+  const cnt = document.getElementById("queueCount");
+  if(!queue.length){el.innerHTML='<div class="queue-empty">No clips queued</div>';cnt.style.display="none";return;}
+  cnt.textContent = queue.length;
+  cnt.style.display = "inline";
+  el.innerHTML = queue.map((id,i)=>{
+    const c = CLIPS.find(x=>x.id===id);
+    return `<div class="queue-row" onclick="selectClip(${id})">${i+1}. ${c.title} <span style="color:var(--accent);font-size:10px">α${c.alpha}</span></div>`;
+  }).join("");
+}
+
+// ─── ANALYZE ─────────────────────────────────────────────────────────────────
+function analyzeClip(id){
+  const c = CLIPS.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById("modalTitle").textContent = c.title;
+  document.getElementById("modalBody").innerHTML = `
+    <strong style="color:var(--accent)">Alpha Score: ${c.alpha}</strong><br>
+    Region: ${c.region} &nbsp;|&nbsp; Source: ${c.source}${c.patent?' &nbsp;|&nbsp; <span style="color:#b89fff">Patent Filed</span>':''}<br><br>
+    ${c.desc}<br><br>
+    <strong style="color:var(--muted)">Estimated Signals</strong><br>
+    Market readiness: ${c.alpha>85?'High':'Medium'} &nbsp;|&nbsp; Novelty: ${c.patent?'Patented':'Open'} &nbsp;|&nbsp; Clip region activity: ${c.region}
+  `;
+  document.getElementById("modalBg").classList.add("open");
+  log(`Analyzed: ${c.title}`);
+}
+
+function closeModal(){document.getElementById("modalBg").classList.remove("open")}
+document.getElementById("modalBg").addEventListener("click",e=>{if(e.target===e.currentTarget)closeModal()});
+
+// ─── EXPORT ───────────────────────────────────────────────────────────────────
+function exportTemplate(t){
+  const c = selectedId ? CLIPS.find(x=>x.id===selectedId) : null;
+  const name = c ? c.title : "clip";
+  log(`Exported "${name}" → ${t} template`);
+  ingestLine(`export: ${name} → ${t}`);
+}
+
+// ─── FINANCIAL CALC ───────────────────────────────────────────────────────────
+document.getElementById("calcBtn").addEventListener("click",()=>{
+  const cost = parseFloat(document.getElementById("cost").value)||50000;
+  const growth = parseFloat(document.getElementById("growth").value)||25;
+  const rev = parseFloat(document.getElementById("revenue").value)||9900;
+  const tam = parseFloat(document.getElementById("tamsize").value)||500000000;
+  const annualRev = rev*12;
+  const breakeven = cost/annualRev;
+  const yr3 = annualRev*Math.pow(1+growth/100,3);
+  const penetration = (yr3/tam*100).toFixed(2);
+  document.getElementById("calcOut").textContent =
+    `Annual Rev:   $${annualRev.toLocaleString()}\nBreakeven:    ${breakeven.toFixed(1)} yrs\nYr-3 Rev:     $${Math.round(yr3).toLocaleString()}\nTAM Capture:  ${penetration}%`;
+  log("Financial snapshot generated");
+});
+
+// ─── MAP MARKERS ──────────────────────────────────────────────────────────────
+function renderMap(){
+  const g = document.getElementById("markers");
+  g.innerHTML = CLIPS.map(c=>`
+    <g onclick="selectClip(${c.id})" style="cursor:pointer">
+      <circle class="pulse-ring" cx="${c.lng/800*800*0.6+64}" cy="${c.lat/500*400*0.55+20}" r="4" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.7"/>
+      <circle cx="${c.lng/800*800*0.6+64}" cy="${c.lat/500*400*0.55+20}" r="3" fill="var(--accent)" opacity="0.9"/>
+    </g>
+  `).join("");
+}
+
+// ─── INGEST SIMULATION ────────────────────────────────────────────────────────
+let ingestIdx=0;
+const ingestMsgs=[
+  "• scanning SeoulExpo feed…",
+  "• new clip detected: α87",
+  "• indexing patent #US20240183…",
+  "• 3 new sources added",
+  "• refreshing Europe cluster…",
+  "• α94 signal — Shenzhen",
+  "• idle…",
+];
+setInterval(()=>{
+  ingestLine(ingestMsgs[ingestIdx%ingestMsgs.length]);
   ingestIdx++;
-}, 3200);
+},3200);
 
-// Patch keepCard to also refresh saves grid
-function keepCard(id) {
-  const s = signals.find(x => x.id === id);
-  if (s) { s._saved = true; }
-  renderGapSaves();
-  openSaveModal(id);
-}
+// ─── FAB ─────────────────────────────────────────────────────────────────────
+document.getElementById("captureFab").addEventListener("click",()=>{
+  log("Capture mode activated — paste URL or drag file");
+});
 
-function applySignalFeed(data, announce) {
-  const normalized = normalizeIncomingFeed(data || {});
-  signals = normalized.signals || [];
-  keptSignals = signals.map(function(s) { return { ...s, status: 'Kept' }; });
-  uiState = loadUiState();
-  uiState.mapRegion = normalizeRegion(uiState.mapRegion);
-  uiState.hubSignalId = normalizeHubSignalId(uiState.hubSignalId);
-  const luEl = document.getElementById('meta-updated');
-  if (luEl && normalized.meta && normalized.meta.last_updated) {
-    luEl.textContent = 'Updated ' + normalized.meta.last_updated;
-  }
-  renderHub();
-  filterByRegion(uiState.mapRegion);
-  renderGapCards();
-  renderGapQueue();
-  renderGapSaves();
-  renderFloatMap();
-  if (uiState.hubSignalId !== null) {
-    showDetail(uiState.hubSignalId);
-  }
-  if (announce) {
-    showToast('Refresh complete');
-  }
-  gapLog('GAP initialized — ' + signals.length + ' signals loaded');
-}
+// ─── REFRESH ─────────────────────────────────────────────────────────────────
+document.getElementById("refreshBtn").addEventListener("click",()=>{
+  log("Feed refreshed");
+  renderFeed();
+});
 
-function refreshSignalFeed() {
-  const feedUrl = getFeedEndpoint();
-  showToast('Pulling new alpha…');
-  fetch(feedUrl, { cache: 'no-store' })
-    .then(function(r) {
-      if (!r.ok) throw new Error('Feed returned ' + r.status);
-      return r.json();
-    })
-    .then(function(data) {
-      applySignalFeed(data, true);
-    })
-    .catch(function(err) {
-      gapLog('Live feed error: ' + err.message);
-      if (feedUrl === DEFAULT_FEED_URL) {
-        renderGapCards();
-        return;
-      }
-      fetch(DEFAULT_FEED_URL)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          applySignalFeed(data, false);
-          showToast('Live feed unavailable — sample feed loaded');
-        })
-        .catch(function(fallbackErr) {
-          gapLog('Data load error: ' + fallbackErr.message);
-          renderGapCards();
-        });
-    });
-}
+// ─── FILTERS + SEARCH ─────────────────────────────────────────────────────────
+document.querySelectorAll(".chip-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".chip-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    renderFeed();
+  });
+});
+document.getElementById("search").addEventListener("input",e=>{
+  searchQuery = e.target.value.toLowerCase();
+  renderFeed();
+});
+document.getElementById("sourceFilter").addEventListener("change",renderFeed);
+document.getElementById("regionFilter").addEventListener("change",renderFeed);
 
-// Init gap features after existing restoreUiState
-function restoreUiState() {
-  refreshSignalFeed();
-}
-
-restoreUiState();
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderFeed();
+renderMap();
+log("GAP initialized");
 </script>
 </body>
 </html>
